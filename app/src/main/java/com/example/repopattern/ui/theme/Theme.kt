@@ -11,21 +11,35 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 
 private val LightColorScheme = lightColorScheme(
-    primary = PrimaryLight, onPrimary = OnPrimaryLight,
+    primary = PrimaryLight,
+    onPrimary = OnPrimaryLight,
     primaryContainer = PrimaryContainerLight,
-    secondary = SecondaryLight, onSecondary = OnSecondaryLight,
-    background = BackgroundLight, onBackground = OnBackgroundLight,
-    surface = SurfaceLight, onSurface = OnSurfaceLight,
-    error = ErrorLight, onError = OnErrorLight
+    secondary = SecondaryLight,
+    onSecondary = OnSecondaryLight,
+    background = BackgroundLight,
+    onBackground = OnBackgroundLight,
+    surface = SurfaceLight,
+    onSurface = OnSurfaceLight,
+    surfaceVariant = SurfaceVariantLight,
+    onSurfaceVariant = OnSurfaceVariantLight,
+    error = ErrorLight,
+    onError = OnErrorLight
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = PrimaryDark, onPrimary = OnPrimaryDark,
+    primary = PrimaryDark,
+    onPrimary = OnPrimaryDark,
     primaryContainer = PrimaryContainerDark,
-    secondary = SecondaryDark, onSecondary = OnSecondaryDark,
-    background = BackgroundDark, onBackground = OnBackgroundDark,
-    surface = SurfaceDark, onSurface = OnSurfaceDark,
-    error = ErrorDark, onError = OnErrorDark
+    secondary = SecondaryDark,
+    onSecondary = OnSecondaryDark,
+    background = BackgroundDark,
+    onBackground = OnBackgroundDark,
+    surface = SurfaceDark,
+    onSurface = OnSurfaceDark,
+    surfaceVariant = SurfaceVariantDark,
+    onSurfaceVariant = OnSurfaceVariantDark,
+    error = ErrorDark,
+    onError = OnErrorDark
 )
 
 @Composable
@@ -42,5 +56,9 @@ fun RepoPatternTheme(
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
-    MaterialTheme(colorScheme = colorScheme, typography = Typography, content = content)
+    MaterialTheme(
+        colorScheme = colorScheme,
+        typography = Typography,
+        content = content
+    )
 }
