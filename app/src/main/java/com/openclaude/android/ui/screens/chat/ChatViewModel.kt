@@ -26,6 +26,7 @@ class ChatViewModel @Inject constructor(
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
 
     private var currentConversationId: String? = null
+    private var lastMessageContent: String? = null
 
     fun initialize(conversationId: String?) {
         val provider = settingsRepository.getSelectedProvider()
@@ -98,6 +99,8 @@ class ChatViewModel @Inject constructor(
         val convId = currentConversationId ?: return
         if (content.isBlank()) return
 
+        lastMessageContent = content
+
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
@@ -113,7 +116,8 @@ class ChatViewModel @Inject constructor(
                             _uiState.update { it.copy(isStreaming = true) }
                         }
                         is StreamEvent.Done -> {
-                            _uiState.update { it.copy(isLoading = false, isStreaming = false) }
+                            _uiState.update { it.copy(isLoading = false, isStreaming = false, canRetry = false) }
+                            lastMessageContent = null
                             // Update title from first user message
                             val messages = _uiState.value.messages
                             if (messages.size <= 3) {
@@ -130,21 +134,46 @@ class ChatViewModel @Inject constructor(
                                     isLoading = false,
                                     isStreaming = false,
                                     error = event.message,
+                                    canRetry = isRetryableError(event.message),
                                 )
                             }
                         }
                     }
                 }
             } catch (e: Exception) {
+                val errorMessage = when {
+                    e.message?.contains("timeout", ignoreCase = true) == true ->
+                        "Connection timed out. Please check your network and try again."
+                    e.message?.contains("network", ignoreCase = true) == true ->
+                        "Network error. Please check your internet connection."
+                    else -> e.message ?: "Unknown error"
+                }
                 _uiState.update {
                     it.copy(
                         isLoading = false,
                         isStreaming = false,
-                        error = e.message ?: "Unknown error",
+                        error = errorMessage,
+                        canRetry = isRetryableError(errorMessage),
                     )
                 }
             }
         }
+    }
+
+    private fun isRetryableError(errorMessage: String?): Boolean {
+        if (errorMessage == null) return false
+        return errorMessage.contains("timeout", ignoreCase = true) ||
+               errorMessage.contains("network", ignoreCase = true) ||
+               errorMessage.contains("connection", ignoreCase = true) ||
+               errorMessage.contains("429", ignoreCase = true) ||
+               errorMessage.contains("500", ignoreCase = true) ||
+               errorMessage.contains("502", ignoreCase = true) ||
+               errorMessage.contains("503", ignoreCase = true)
+    }
+
+    fun retryLastMessage() {
+        val content = lastMessageContent ?: return
+        sendMessage(content)
     }
 
     fun setProvider(provider: Provider) {
@@ -161,7 +190,7 @@ class ChatViewModel @Inject constructor(
     }
 
     fun clearError() {
-        _uiState.update { it.copy(error = null) }
+        _uiState.update { it.copy(error = null, canRetry = false) }
     }
 
     fun newChat() {

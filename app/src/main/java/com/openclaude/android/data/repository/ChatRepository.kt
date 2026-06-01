@@ -85,61 +85,72 @@ class ChatRepository @Inject constructor(
         provider: Provider,
         model: Model,
     ): Flow<StreamEvent> = flow {
-        val apiKey = settingsRepository.getApiKey(provider)
-            ?: throw IllegalStateException("API key not set for ${provider.displayName}")
+        try {
+            val apiKey = settingsRepository.getApiKey(provider)
+                ?: throw IllegalStateException("API key not set for ${provider.displayName}")
 
-        val messages = messageDao.getMessagesByConversationSync(conversationId)
-        val messageDtos = messages.map { msg ->
-            MessageDto(role = msg.role, content = msg.content)
-        }
+            val messages = messageDao.getMessagesByConversationSync(conversationId)
+            val messageDtos = messages.map { msg ->
+                MessageDto(role = msg.role, content = msg.content)
+            }
 
-        val tempMessageId = UUID.randomUUID().toString()
-        var fullContent = ""
+            val tempMessageId = UUID.randomUUID().toString()
+            var fullContent = ""
 
-        // Emit initial streaming message
-        val tempMessage = ChatMessage(
-            id = tempMessageId,
-            conversationId = conversationId,
-            role = "assistant",
-            content = "",
-            isStreaming = true,
-        )
-        messageDao.insertMessage(tempMessage)
+            // Emit initial streaming message
+            val tempMessage = ChatMessage(
+                id = tempMessageId,
+                conversationId = conversationId,
+                role = "assistant",
+                content = "",
+                isStreaming = true,
+            )
+            messageDao.insertMessage(tempMessage)
 
-        streamingClient.streamChatCompletion(
-            baseUrl = settingsRepository.getBaseUrl(provider),
-            apiKey = apiKey,
-            model = model.id,
-            messages = messageDtos,
-            temperature = 0.7,
-            maxTokens = model.maxTokens,
-        ).collect { event ->
-            when (event) {
-                is StreamEvent.Content -> {
-                    fullContent += event.text
-                    messageDao.updateMessage(tempMessage.copy(content = fullContent))
-                    emit(StreamEvent.Content(event.text))
-                }
-                is StreamEvent.Done -> {
-                    messageDao.updateMessage(
-                        tempMessage.copy(
-                            content = fullContent,
-                            isStreaming = false
+            streamingClient.streamChatCompletion(
+                baseUrl = settingsRepository.getBaseUrl(provider),
+                apiKey = apiKey,
+                model = model.id,
+                messages = messageDtos,
+                temperature = 0.7,
+                maxTokens = model.maxTokens,
+            ).collect { event ->
+                when (event) {
+                    is StreamEvent.Content -> {
+                        // Filter out empty content chunks
+                        if (event.text.isEmpty()) return@collect
+                        
+                        fullContent += event.text
+                        messageDao.updateMessage(tempMessage.copy(content = fullContent))
+                        emit(StreamEvent.Content(event.text))
+                    }
+                    is StreamEvent.Done -> {
+                        messageDao.updateMessage(
+                            tempMessage.copy(
+                                content = fullContent,
+                                isStreaming = false
+                            )
                         )
-                    )
-                    conversationDao.updateConversationTimestamp(conversationId)
-                    emit(StreamEvent.Done)
-                }
-                is StreamEvent.Error -> {
-                    messageDao.updateMessage(
-                        tempMessage.copy(
-                            content = if (fullContent.isEmpty()) "Error: ${event.message}" else fullContent,
-                            isStreaming = false
+                        conversationDao.updateConversationTimestamp(conversationId)
+                        emit(StreamEvent.Done)
+                    }
+                    is StreamEvent.Error -> {
+                        messageDao.updateMessage(
+                            tempMessage.copy(
+                                content = if (fullContent.isEmpty()) "Error: ${event.message}" else fullContent,
+                                isStreaming = false
+                            )
                         )
-                    )
-                    emit(event)
+                        emit(event)
+                    }
                 }
             }
+        } catch (e: IllegalStateException) {
+            // API key not set
+            emit(StreamEvent.Error(e.message ?: "API key not configured"))
+        } catch (e: Exception) {
+            // Any other error during stream setup
+            emit(StreamEvent.Error("Failed to start streaming: ${e.message}"))
         }
     }
 
