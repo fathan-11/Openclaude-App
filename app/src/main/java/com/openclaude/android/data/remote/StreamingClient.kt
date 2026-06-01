@@ -58,24 +58,18 @@ class StreamingClient(
 
         call.enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                val errorMessage = when (e) {
-                    is SocketTimeoutException -> "Connection timed out. Please check your network and try again."
-                    else -> e.message ?: "Unknown error"
+                val apiError = when (e) {
+                    is SocketTimeoutException -> ApiError.TimeoutError("Connection timed out")
+                    else -> ApiError.NetworkError(e.message ?: "Network error")
                 }
-                trySend(StreamEvent.Error(errorMessage))
+                trySend(StreamEvent.Error(apiError.userMessage))
                 close()
             }
 
             override fun onResponse(call: Call, response: Response) {
                 if (!response.isSuccessful) {
-                    val errorMessage = when (response.code) {
-                        401 -> "Invalid API key. Please check your settings."
-                        403 -> "Access denied. Please verify your API key permissions."
-                        429 -> "Rate limit exceeded. Please wait and try again."
-                        500, 502, 503 -> "Server error (${response.code}). Please try again later."
-                        else -> "HTTP ${response.code}: ${response.message}"
-                    }
-                    trySend(StreamEvent.Error(errorMessage))
+                    val apiError = ApiError.fromHttpCode(response.code, response.message)
+                    trySend(StreamEvent.Error(apiError.userMessage))
                     close()
                     return
                 }
@@ -88,24 +82,21 @@ class StreamingClient(
 
                     var line: String?
                     var emptyChunkCount = 0
-                    val maxEmptyChunks = 100 // Prevent infinite loops on empty data
+                    val maxEmptyChunks = 100
 
                     while (reader.readLine().also { line = it } != null) {
                         val currentLine = line ?: continue
                         
-                        // Skip empty lines (SSE format uses empty lines as delimiters)
                         if (currentLine.isBlank()) continue
                         
                         if (currentLine.startsWith("data: ")) {
                             val data = currentLine.removePrefix("data: ").trim()
                             
-                            // Handle [DONE] signal
                             if (data == "[DONE]") {
                                 trySend(StreamEvent.Done)
                                 break
                             }
                             
-                            // Skip empty data chunks
                             if (data.isEmpty()) {
                                 emptyChunkCount++
                                 if (emptyChunkCount >= maxEmptyChunks) {
@@ -115,13 +106,12 @@ class StreamingClient(
                                 continue
                             }
                             
-                            emptyChunkCount = 0 // Reset counter on valid data
+                            emptyChunkCount = 0
 
                             try {
                                 val chunk = streamAdapter.fromJson(data)
                                 val content = chunk?.choices?.firstOrNull()?.delta?.content
                                 
-                                // Filter out empty content chunks
                                 if (!content.isNullOrEmpty()) {
                                     trySend(StreamEvent.Content(content))
                                 }
@@ -132,8 +122,6 @@ class StreamingClient(
                                     break
                                 }
                             } catch (e: Exception) {
-                                // Log malformed JSON but continue processing
-                                // This handles edge cases where SSE events may have malformed JSON
                                 e.printStackTrace()
                                 continue
                             }
@@ -141,11 +129,11 @@ class StreamingClient(
                     }
                     reader.close()
                 } catch (e: SocketTimeoutException) {
-                    trySend(StreamEvent.Error("Connection timed out during streaming. Response may be incomplete."))
+                    trySend(StreamEvent.Error(ApiError.TimeoutError("Connection timed out during streaming").userMessage))
                 } catch (e: IOException) {
-                    trySend(StreamEvent.Error("Connection lost during streaming: ${e.message}"))
+                    trySend(StreamEvent.Error(ApiError.NetworkError("Connection lost during streaming: ${e.message}").userMessage))
                 } catch (e: Exception) {
-                    trySend(StreamEvent.Error("Stream error: ${e.message}"))
+                    trySend(StreamEvent.Error(ApiError.UnknownError(e.message ?: "Stream error").userMessage))
                 } finally {
                     response.close()
                     close()
@@ -168,15 +156,21 @@ class StreamingClient(
 
         val response = client.newCall(request).execute()
         if (!response.isSuccessful) {
-            throw IOException("HTTP ${response.code}: ${response.message}")
+            val apiError = ApiError.fromHttpCode(response.code, response.message)
+            throw apiError.toException()
         }
 
-        val body = response.body?.string() ?: throw IOException("Empty response")
+        val body = response.body?.string() ?: throw ApiError.UnknownError("Empty response").toException()
         val moshiAdapter = moshi.adapter(ModelsListResponse::class.java)
-        val modelsResponse = moshiAdapter.fromJson(body) ?: throw IOException("Parse error")
+        val modelsResponse = moshiAdapter.fromJson(body) ?: throw ApiError.UnknownError("Parse error").toException()
         modelsResponse.data.map { it.id }
     }
 }
+
+/**
+ * Extension to convert ApiError to Exception for throwing.
+ */
+fun ApiError.toException(): Exception = Exception(this.userMessage)
 
 sealed class StreamEvent {
     data class Content(val text: String) : StreamEvent()

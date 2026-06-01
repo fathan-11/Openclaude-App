@@ -2,12 +2,14 @@ package com.openclaude.android.domain.model
 
 import com.openclaude.android.data.model.Model
 import com.openclaude.android.data.model.Provider
+import com.openclaude.android.data.remote.ApiError
 
 data class ChatUiState(
     val messages: List<MessageUiModel> = emptyList(),
     val isLoading: Boolean = false,
     val isStreaming: Boolean = false,
     val error: String? = null,
+    val errorType: ApiError? = null,
     val canRetry: Boolean = false,
     val currentProvider: Provider = Provider.OPENAI,
     val currentModel: Model = Model.defaultModels(Provider.OPENAI).first(),

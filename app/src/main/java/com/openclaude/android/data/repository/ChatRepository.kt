@@ -6,7 +6,7 @@ import com.openclaude.android.data.model.ChatMessage
 import com.openclaude.android.data.model.Conversation
 import com.openclaude.android.data.model.Model
 import com.openclaude.android.data.model.Provider
-import com.openclaude.android.data.network.NetworkConnectivityMonitor
+import com.openclaude.android.data.remote.ApiError
 import com.openclaude.android.data.remote.ApiService
 import com.openclaude.android.data.remote.StreamEvent
 import com.openclaude.android.data.remote.StreamingClient
@@ -88,14 +88,8 @@ class ChatRepository @Inject constructor(
         model: Model,
     ): Flow<StreamEvent> = flow {
         try {
-            // Check network connectivity before making API call
-            if (!networkMonitor.isConnected()) {
-                emit(StreamEvent.Error("No internet connection. Please check your network settings."))
-                return@flow
-            }
-
             val apiKey = settingsRepository.getApiKey(provider)
-                ?: throw IllegalStateException("API key not set for ${provider.displayName}")
+                ?: throw ApiError.AuthError("API key not set for ${provider.displayName}")
 
             val messages = messageDao.getMessagesByConversationSync(conversationId)
             val messageDtos = messages.map { msg ->
@@ -125,7 +119,6 @@ class ChatRepository @Inject constructor(
             ).collect { event ->
                 when (event) {
                     is StreamEvent.Content -> {
-                        // Filter out empty content chunks
                         if (event.text.isEmpty()) return@collect
                         
                         fullContent += event.text
@@ -153,12 +146,14 @@ class ChatRepository @Inject constructor(
                     }
                 }
             }
+        } catch (e: ApiError) {
+            emit(StreamEvent.Error(e.userMessage))
         } catch (e: IllegalStateException) {
-            // API key not set
-            emit(StreamEvent.Error(e.message ?: "API key not configured"))
+            val apiError = ApiError.UnknownError(e.message ?: "Unknown error")
+            emit(StreamEvent.Error(apiError.userMessage))
         } catch (e: Exception) {
-            // Any other error during stream setup
-            emit(StreamEvent.Error("Failed to start streaming: ${e.message}"))
+            val apiError = ApiError.fromException(e)
+            emit(StreamEvent.Error(apiError.userMessage))
         }
     }
 
@@ -178,8 +173,20 @@ class ChatRepository @Inject constructor(
                 baseUrl = settingsRepository.getBaseUrl(provider),
                 apiKey = apiKey
             )
+        } catch (e: ApiError) {
+            Model.defaultModels(provider).map { it.id }
         } catch (e: Exception) {
             Model.defaultModels(provider).map { it.id }
+        }
+    }
+
+    /**
+     * Maps an exception to an ApiError for consistent error handling.
+     */
+    fun mapExceptionToApiError(e: Exception): ApiError {
+        return when (e) {
+            is ApiError -> e
+            else -> ApiError.fromException(e)
         }
     }
 }
