@@ -1,0 +1,14 @@
+# Default owners for everything
+*       @fathan-11
+
+# CI/CD workflows
+.github/    @fathan-11
+
+# Documentation
+docs/       @fathan-11
+
+# App source code
+app/src/    @fathan-11
+
+# Build configuration
+*.gradle.kts    @fathan-11
