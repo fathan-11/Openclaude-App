@@ -68,6 +68,15 @@ fun CodeViewerScreen(
                                        else MaterialTheme.colorScheme.onSurface
                             )
                         }
+                        // Replace toggle
+                        IconButton(onClick = { viewModel.toggleReplace() }) {
+                            Icon(
+                                Icons.Default.FindReplace,
+                                "Replace",
+                                tint = if (uiState.isReplaceVisible) MaterialTheme.colorScheme.primary
+                                       else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
                         // Font size controls
                         IconButton(onClick = { viewModel.decreaseFontSize() }) {
                             Icon(Icons.Default.TextDecrease, "Decrease font")
@@ -114,6 +123,20 @@ fun CodeViewerScreen(
                         onNext = { viewModel.nextMatch() },
                         onPrevious = { viewModel.previousMatch() },
                         onClose = { viewModel.toggleSearch() }
+                    )
+                }
+                // Replace bar
+                AnimatedVisibility(
+                    visible = uiState.isReplaceVisible && uiState.isSearchVisible,
+                    enter = fadeIn() + expandVertically(),
+                    exit = fadeOut() + shrinkVertically()
+                ) {
+                    ReplaceBar(
+                        replaceQuery = uiState.replaceQuery,
+                        onReplaceQueryChange = { viewModel.updateReplaceQuery(it) },
+                        onReplace = { viewModel.replaceCurrent() },
+                        onReplaceAll = { viewModel.replaceAll() },
+                        hasMatches = uiState.matchCount > 0
                     )
                 }
             }
@@ -275,6 +298,64 @@ private fun SearchBar(
             // Close
             IconButton(onClick = onClose, modifier = Modifier.size(32.dp)) {
                 Icon(Icons.Default.Close, "Close search", modifier = Modifier.size(18.dp))
+            }
+        }
+    }
+}
+
+@Composable
+private fun ReplaceBar(
+    replaceQuery: String,
+    onReplaceQueryChange: (String) -> Unit,
+    onReplace: () -> Unit,
+    onReplaceAll: () -> Unit,
+    hasMatches: Boolean,
+) {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                Icons.Default.FindReplace,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(Modifier.width(8.dp))
+            BasicTextField(
+                value = replaceQuery,
+                onValueChange = onReplaceQueryChange,
+                modifier = Modifier.weight(1f),
+                singleLine = true,
+                textStyle = MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurface
+                ),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                decorationBox = { innerTextField ->
+                    Box {
+                        if (replaceQuery.isEmpty()) {
+                            Text(
+                                "Replace...",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                            )
+                        }
+                        innerTextField()
+                    }
+                }
+            )
+            Spacer(Modifier.width(8.dp))
+            TextButton(onClick = onReplace, enabled = hasMatches) {
+                Text("Replace", style = MaterialTheme.typography.bodySmall)
+            }
+            TextButton(onClick = onReplaceAll, enabled = hasMatches) {
+                Text("All", style = MaterialTheme.typography.bodySmall)
             }
         }
     }

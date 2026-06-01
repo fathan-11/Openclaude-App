@@ -35,6 +35,9 @@ data class CodeViewerUiState(
     val searchResults: List<SearchResult> = emptyList(),
     val currentMatchIndex: Int = -1,
     val matchCount: Int = 0,
+    // Replace state
+    val isReplaceVisible: Boolean = false,
+    val replaceQuery: String = "",
 )
 
 @HiltViewModel
@@ -158,6 +161,32 @@ class CodeViewerViewModel @Inject constructor(
     fun clearSearch() {
         _uiState.update { it.copy(searchQuery = "", searchResults = emptyList(), currentMatchIndex = -1, matchCount = 0) }
         updateHighlightedCode()
+    }
+
+    fun toggleReplace() {
+        _uiState.update { it.copy(isReplaceVisible = !it.isReplaceVisible) }
+    }
+
+    fun updateReplaceQuery(query: String) {
+        _uiState.update { it.copy(replaceQuery = query) }
+    }
+
+    fun replaceCurrent() {
+        val state = _uiState.value
+        if (state.searchResults.isEmpty() || state.currentMatchIndex < 0) return
+        val result = state.searchResults[state.currentMatchIndex]
+        val replaceWith = state.replaceQuery
+        rawContent = rawContent.substring(0, result.startIndex) + replaceWith + rawContent.substring(result.endIndex)
+        performSearch(state.searchQuery)
+    }
+
+    fun replaceAll() {
+        val state = _uiState.value
+        if (state.searchResults.isEmpty()) return
+        val query = state.searchQuery
+        val replaceWith = state.replaceQuery
+        rawContent = rawContent.replace(query, replaceWith, ignoreCase = true)
+        performSearch(state.searchQuery)
     }
 
     private fun updateHighlightedCode() {
