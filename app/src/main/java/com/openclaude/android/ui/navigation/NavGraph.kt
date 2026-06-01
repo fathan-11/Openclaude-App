@@ -15,6 +15,12 @@ import androidx.navigation.navArgument
 import com.openclaude.android.ui.screens.chat.ChatScreen
 import com.openclaude.android.ui.screens.conversations.ConversationListScreen
 import com.openclaude.android.ui.screens.settings.SettingsScreen
+import com.openclaude.android.ui.screens.files.FileBrowserScreen
+import com.openclaude.android.ui.screens.codeviewer.CodeViewerScreen
+import com.openclaude.android.ui.screens.search.SearchScreen
+import com.openclaude.android.ui.screens.diff.DiffViewerScreen
+import com.openclaude.android.data.model.DiffResult
+import com.openclaude.android.data.model.DiffHunk
 import com.openclaude.android.ui.components.BottomNav
 import com.openclaude.android.ui.components.TopBar
 
@@ -27,6 +33,8 @@ data class BottomNavItem(
 val bottomNavItems = listOf(
     BottomNavItem("Chat", Icons.Default.Chat, Routes.CHAT),
     BottomNavItem("History", Icons.Default.History, Routes.CONVERSATIONS),
+    BottomNavItem("Files", Icons.Default.Folder, Routes.FILES),
+    BottomNavItem("Search", Icons.Default.Search, Routes.SEARCH),
     BottomNavItem("Settings", Icons.Default.Settings, Routes.SETTINGS),
 )
 
@@ -97,6 +105,39 @@ fun NavGraph() {
             }
             composable(Routes.SETTINGS) {
                 SettingsScreen()
+            }
+            composable(Routes.FILES) {
+                FileBrowserScreen(
+                    onFileClick = { path ->
+                        navController.navigate(Routes.codeWithPath(path))
+                    }
+                )
+            }
+            composable(
+                Routes.CODE,
+                arguments = listOf(navArgument("path") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val path = backStackEntry.arguments?.getString("path") ?: ""
+                CodeViewerScreen(
+                    filePath = path,
+                    onBack = { navController.popBackStack() }
+                )
+            }
+            composable(Routes.SEARCH) {
+                SearchScreen(
+                    onResultClick = { path ->
+                        navController.navigate(Routes.codeWithPath(path))
+                    }
+                )
+            }
+            composable(
+                Routes.DIFF,
+                arguments = listOf(navArgument("file") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val file = backStackEntry.arguments?.getString("file") ?: ""
+                // DiffViewerScreen requires a DiffResult - this would need to be loaded via ViewModel
+                // For now, placeholder that navigates back
+                // In a full implementation, use a DiffViewerViewModel to load the diff
             }
         }
     }

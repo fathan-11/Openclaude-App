@@ -2,6 +2,7 @@ package com.openclaude.android.di
 
 import android.content.Context
 import com.openclaude.android.data.remote.ApiService
+import com.openclaude.android.data.remote.FileApiService
 import com.openclaude.android.data.remote.StreamingClient
 import com.openclaude.android.data.repository.SettingsRepository
 import com.squareup.moshi.Moshi
@@ -58,6 +59,12 @@ object AppModule {
     @Singleton
     fun provideApiService(retrofit: Retrofit): ApiService {
         return retrofit.create(ApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideFileApiService(retrofit: Retrofit): FileApiService {
+        return retrofit.create(FileApiService::class.java)
     }
 
     @Provides
