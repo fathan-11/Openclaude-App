@@ -1,0 +1,7 @@
+{
+  "title": "FIX: {bug_description}",
+  "body": "## \ud83d\udccb Description\n\n**What:** Fixed {bug_description}\n**Why:** {impact}\n**How:** {fix_approach}\n\n## \ud83c\udfaf Target Branch\n- [ ] `develop`\n- [ ] `staging`\n- [ ] `main`\n\n## \ud83d\udce6 Type of Change\n- [x] \ud83d\udc1b Bug fix\n\n## \ud83d\udd17 Related Issues\nCloses #{issue_number}\n\n## \ud83d\udc1b Bug Details\n**Before:** {before_behavior}\n**After:** {after_behavior}\n\n## \u2705 Checklist\n- [ ] Root cause identified\n- [ ] Fix tested\n- [ ] Regression test added\n- [ ] No side effects\n\n## \ud83e\uddea Testing\n{testing_steps}\n",
+  "head": "bugfix/{branch_name}",
+  "base": "develop",
+  "draft": false
+}

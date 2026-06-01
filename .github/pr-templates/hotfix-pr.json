@@ -1,0 +1,7 @@
+{
+  "title": "HOTFIX: {critical_issue}",
+  "body": "## \ud83d\udd25 HOTFIX\n\n**What:** Emergency fix for {critical_issue}\n**Why:** {production_impact}\n**How:** {fix_description}\n\n## \ud83c\udfaf Target Branch\n- [x] `main` (emergency)\n\n## \u26a0\ufe0f Urgency\n- [x] Critical - Production broken\n- [ ] High - Major functionality affected\n\n## \ud83d\udd17 Related Issues\nCloses #{issue_number}\n\n## \ud83d\udea8 Production Impact\n{impact_description}\n\n## \u2705 Emergency Checklist\n- [ ] Fix verified locally\n- [ ] Critical tests pass\n- [ ] No side effects\n- [ ] Rollback plan ready\n\n## \ud83e\uddea Testing\n{testing_steps}\n\n## \ud83d\udccb Post-Merge\n- [ ] Cherry-pick to staging\n- [ ] Cherry-pick to develop\n- [ ] Monitor production\n",
+  "head": "hotfix/{branch_name}",
+  "base": "main",
+  "draft": false
+}
