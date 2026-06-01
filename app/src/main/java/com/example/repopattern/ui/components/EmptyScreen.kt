@@ -20,7 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun EmptyScreen(onRetry: () -> Unit, modifier: Modifier = Modifier) {
+fun EmptyScreen(onRetry: () -> Unit, modifier: Modifier = Modifier, message: String = "No users found") {
     Column(
         modifier = modifier.fillMaxSize().padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -28,7 +28,7 @@ fun EmptyScreen(onRetry: () -> Unit, modifier: Modifier = Modifier) {
     ) {
         Icon(Icons.Default.Inbox, "Empty", Modifier.size(64.dp), tint = MaterialTheme.colorScheme.secondary)
         Spacer(Modifier.height(16.dp))
-        Text("No users found", style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onBackground, textAlign = TextAlign.Center)
+        Text(message, style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onBackground, textAlign = TextAlign.Center)
         Spacer(Modifier.height(24.dp))
         Button(onClick = onRetry) { Text("Try Again") }
     }
