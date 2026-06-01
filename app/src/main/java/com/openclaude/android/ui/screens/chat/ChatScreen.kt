@@ -104,7 +104,7 @@ fun ChatScreen(
             }
         }
 
-        // Error banner
+        // Error banner with retry button
         AnimatedVisibility(
             visible = uiState.error != null,
             enter = fadeIn() + slideInVertically(),
@@ -115,23 +115,48 @@ fun ChatScreen(
                     color = MaterialTheme.colorScheme.errorContainer,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Row(
-                        modifier = Modifier.padding(12.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                    Column(
+                        modifier = Modifier.padding(12.dp)
                     ) {
-                        Text(
-                            text = error,
-                            color = MaterialTheme.colorScheme.onErrorContainer,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.weight(1f)
-                        )
-                        IconButton(onClick = { viewModel.clearError() }) {
-                            Icon(
-                                Icons.Default.Close,
-                                contentDescription = "Dismiss",
-                                tint = MaterialTheme.colorScheme.onErrorContainer
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = error,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.weight(1f)
                             )
+                            IconButton(onClick = { viewModel.clearError() }) {
+                                Icon(
+                                    Icons.Default.Close,
+                                    contentDescription = "Dismiss",
+                                    tint = MaterialTheme.colorScheme.onErrorContainer
+                                )
+                            }
+                        }
+                        
+                        // Show retry button for transient errors
+                        if (uiState.canRetry) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Button(
+                                onClick = { viewModel.retryLastMessage() },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.error,
+                                    contentColor = MaterialTheme.colorScheme.onError
+                                ),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Icon(
+                                    Icons.Default.Refresh,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Retry")
+                            }
                         }
                     }
                 }

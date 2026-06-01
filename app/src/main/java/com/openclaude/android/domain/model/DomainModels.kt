@@ -8,6 +8,7 @@ data class ChatUiState(
     val isLoading: Boolean = false,
     val isStreaming: Boolean = false,
     val error: String? = null,
+    val canRetry: Boolean = false,
     val currentProvider: Provider = Provider.OPENAI,
     val currentModel: Model = Model.defaultModels(Provider.OPENAI).first(),
     val conversationId: String? = null,

@@ -14,6 +14,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
+import java.net.SocketTimeoutException
 import java.util.concurrent.TimeUnit
 
 class StreamingClient(
@@ -23,6 +24,7 @@ class StreamingClient(
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(120, TimeUnit.SECONDS)
         .writeTimeout(30, TimeUnit.SECONDS)
+        .retryOnConnectionFailure(true)
         .build()
 
     fun streamChatCompletion(
@@ -56,13 +58,24 @@ class StreamingClient(
 
         call.enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                trySend(StreamEvent.Error(e.message ?: "Unknown error"))
+                val errorMessage = when (e) {
+                    is SocketTimeoutException -> "Connection timed out. Please check your network and try again."
+                    else -> e.message ?: "Unknown error"
+                }
+                trySend(StreamEvent.Error(errorMessage))
                 close()
             }
 
             override fun onResponse(call: Call, response: Response) {
                 if (!response.isSuccessful) {
-                    trySend(StreamEvent.Error("HTTP ${response.code}: ${response.message}"))
+                    val errorMessage = when (response.code) {
+                        401 -> "Invalid API key. Please check your settings."
+                        403 -> "Access denied. Please verify your API key permissions."
+                        429 -> "Rate limit exceeded. Please wait and try again."
+                        500, 502, 503 -> "Server error (${response.code}). Please try again later."
+                        else -> "HTTP ${response.code}: ${response.message}"
+                    }
+                    trySend(StreamEvent.Error(errorMessage))
                     close()
                     return
                 }
@@ -74,32 +87,65 @@ class StreamingClient(
                     )
 
                     var line: String?
+                    var emptyChunkCount = 0
+                    val maxEmptyChunks = 100 // Prevent infinite loops on empty data
+
                     while (reader.readLine().also { line = it } != null) {
                         val currentLine = line ?: continue
+                        
+                        // Skip empty lines (SSE format uses empty lines as delimiters)
+                        if (currentLine.isBlank()) continue
+                        
                         if (currentLine.startsWith("data: ")) {
                             val data = currentLine.removePrefix("data: ").trim()
+                            
+                            // Handle [DONE] signal
                             if (data == "[DONE]") {
                                 trySend(StreamEvent.Done)
                                 break
                             }
+                            
+                            // Skip empty data chunks
+                            if (data.isEmpty()) {
+                                emptyChunkCount++
+                                if (emptyChunkCount >= maxEmptyChunks) {
+                                    trySend(StreamEvent.Error("Too many empty response chunks received."))
+                                    break
+                                }
+                                continue
+                            }
+                            
+                            emptyChunkCount = 0 // Reset counter on valid data
+
                             try {
                                 val chunk = streamAdapter.fromJson(data)
                                 val content = chunk?.choices?.firstOrNull()?.delta?.content
-                                if (content != null) {
+                                
+                                // Filter out empty content chunks
+                                if (!content.isNullOrEmpty()) {
                                     trySend(StreamEvent.Content(content))
                                 }
+                                
                                 val finishReason = chunk?.choices?.firstOrNull()?.finishReason
                                 if (finishReason != null) {
                                     trySend(StreamEvent.Done)
+                                    break
                                 }
                             } catch (e: Exception) {
-                                // Skip malformed chunks
+                                // Log malformed JSON but continue processing
+                                // This handles edge cases where SSE events may have malformed JSON
+                                e.printStackTrace()
+                                continue
                             }
                         }
                     }
                     reader.close()
+                } catch (e: SocketTimeoutException) {
+                    trySend(StreamEvent.Error("Connection timed out during streaming. Response may be incomplete."))
+                } catch (e: IOException) {
+                    trySend(StreamEvent.Error("Connection lost during streaming: ${e.message}"))
                 } catch (e: Exception) {
-                    trySend(StreamEvent.Error(e.message ?: "Stream error"))
+                    trySend(StreamEvent.Error("Stream error: ${e.message}"))
                 } finally {
                     response.close()
                     close()
