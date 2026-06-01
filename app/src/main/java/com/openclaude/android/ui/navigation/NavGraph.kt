@@ -19,6 +19,9 @@ import com.openclaude.android.ui.screens.files.FileBrowserScreen
 import com.openclaude.android.ui.screens.codeviewer.CodeViewerScreen
 import com.openclaude.android.ui.screens.search.SearchScreen
 import com.openclaude.android.ui.screens.diff.DiffViewerScreen
+import com.openclaude.android.ui.screens.terminal.TerminalScreen
+import com.openclaude.android.ui.screens.tools.ToolOutputScreen
+import com.openclaude.android.ui.screens.mcp.McpScreen
 import com.openclaude.android.data.model.DiffResult
 import com.openclaude.android.data.model.DiffHunk
 import com.openclaude.android.ui.components.BottomNav
@@ -35,6 +38,9 @@ val bottomNavItems = listOf(
     BottomNavItem("History", Icons.Default.History, Routes.CONVERSATIONS),
     BottomNavItem("Files", Icons.Default.Folder, Routes.FILES),
     BottomNavItem("Search", Icons.Default.Search, Routes.SEARCH),
+    BottomNavItem("Terminal", Icons.Default.Terminal, Routes.TERMINAL),
+    BottomNavItem("Tools", Icons.Default.Build, Routes.TOOLS),
+    BottomNavItem("MCP", Icons.Default.Hub, Routes.MCP),
     BottomNavItem("Settings", Icons.Default.Settings, Routes.SETTINGS),
 )
 
@@ -129,6 +135,15 @@ fun NavGraph() {
                         navController.navigate(Routes.codeWithPath(path))
                     }
                 )
+            }
+            composable(Routes.TERMINAL) {
+                TerminalScreen()
+            }
+            composable(Routes.TOOLS) {
+                ToolOutputScreen()
+            }
+            composable(Routes.MCP) {
+                McpScreen()
             }
             composable(
                 Routes.DIFF,

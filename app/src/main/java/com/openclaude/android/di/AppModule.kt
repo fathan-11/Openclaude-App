@@ -3,6 +3,9 @@ package com.openclaude.android.di
 import android.content.Context
 import com.openclaude.android.data.remote.ApiService
 import com.openclaude.android.data.remote.FileApiService
+import com.openclaude.android.data.remote.McpApiService
+import com.openclaude.android.data.remote.TerminalApiService
+import com.openclaude.android.data.remote.ToolApiService
 import com.openclaude.android.data.remote.StreamingClient
 import com.openclaude.android.data.repository.SettingsRepository
 import com.squareup.moshi.Moshi
@@ -65,6 +68,24 @@ object AppModule {
     @Singleton
     fun provideFileApiService(retrofit: Retrofit): FileApiService {
         return retrofit.create(FileApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideTerminalApiService(retrofit: Retrofit): TerminalApiService {
+        return retrofit.create(TerminalApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideToolApiService(retrofit: Retrofit): ToolApiService {
+        return retrofit.create(ToolApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideMcpApiService(retrofit: Retrofit): McpApiService {
+        return retrofit.create(McpApiService::class.java)
     }
 
     @Provides

@@ -11,7 +11,16 @@ import com.openclaude.android.data.repository.SettingsRepository
 import com.openclaude.android.domain.usecase.BrowseFilesUseCase
 import com.openclaude.android.domain.usecase.ReadFileUseCase
 import com.openclaude.android.domain.usecase.SearchCodeUseCase
+import com.openclaude.android.data.remote.McpApiService
+import com.openclaude.android.data.remote.TerminalApiService
+import com.openclaude.android.data.remote.ToolApiService
+import com.openclaude.android.data.repository.McpRepository
+import com.openclaude.android.data.repository.TerminalRepository
+import com.openclaude.android.data.repository.ToolRepository
 import com.openclaude.android.domain.usecase.GetDiffUseCase
+import com.openclaude.android.domain.usecase.ExecuteToolUseCase
+import com.openclaude.android.domain.usecase.ManageMcpUseCase
+import com.openclaude.android.domain.usecase.RunCommandUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -78,5 +87,53 @@ object RepositoryModule {
         fileRepository: FileRepository
     ): GetDiffUseCase {
         return GetDiffUseCase(fileRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideTerminalRepository(
+        terminalApiService: TerminalApiService
+    ): TerminalRepository {
+        return TerminalRepository(terminalApiService)
+    }
+
+    @Provides
+    @Singleton
+    fun provideToolRepository(
+        toolApiService: ToolApiService
+    ): ToolRepository {
+        return ToolRepository(toolApiService)
+    }
+
+    @Provides
+    @Singleton
+    fun provideMcpRepository(
+        mcpApiService: McpApiService
+    ): McpRepository {
+        return McpRepository(mcpApiService)
+    }
+
+    @Provides
+    @Singleton
+    fun provideRunCommandUseCase(
+        terminalRepository: TerminalRepository
+    ): RunCommandUseCase {
+        return RunCommandUseCase(terminalRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideExecuteToolUseCase(
+        toolRepository: ToolRepository
+    ): ExecuteToolUseCase {
+        return ExecuteToolUseCase(toolRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideManageMcpUseCase(
+        mcpRepository: McpRepository
+    ): ManageMcpUseCase {
+        return ManageMcpUseCase(mcpRepository)
     }
 }

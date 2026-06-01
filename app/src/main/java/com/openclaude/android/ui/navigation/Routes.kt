@@ -9,6 +9,9 @@ object Routes {
     const val CODE = "code/{path}"
     const val SEARCH = "search"
     const val DIFF = "diff/{file}"
+    const val TERMINAL = "terminal"
+    const val TOOLS = "tools"
+    const val MCP = "mcp"
 
     fun chatWithId(conversationId: String): String = "chat/$conversationId"
     fun codeWithPath(path: String): String = "code/$path"
