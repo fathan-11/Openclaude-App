@@ -6,6 +6,7 @@ import com.openclaude.android.data.model.ChatMessage
 import com.openclaude.android.data.model.Conversation
 import com.openclaude.android.data.model.Model
 import com.openclaude.android.data.model.Provider
+import com.openclaude.android.data.network.NetworkConnectivityMonitor
 import com.openclaude.android.data.remote.ApiService
 import com.openclaude.android.data.remote.StreamEvent
 import com.openclaude.android.data.remote.StreamingClient
@@ -23,6 +24,7 @@ class ChatRepository @Inject constructor(
     private val apiService: ApiService,
     private val streamingClient: StreamingClient,
     private val settingsRepository: SettingsRepository,
+    private val networkMonitor: NetworkConnectivityMonitor,
 ) {
     fun getConversations(): Flow<List<Conversation>> = conversationDao.getAllConversations()
 
@@ -86,6 +88,12 @@ class ChatRepository @Inject constructor(
         model: Model,
     ): Flow<StreamEvent> = flow {
         try {
+            // Check network connectivity before making API call
+            if (!networkMonitor.isConnected()) {
+                emit(StreamEvent.Error("No internet connection. Please check your network settings."))
+                return@flow
+            }
+
             val apiKey = settingsRepository.getApiKey(provider)
                 ?: throw IllegalStateException("API key not set for ${provider.displayName}")
 
@@ -162,6 +170,9 @@ class ChatRepository @Inject constructor(
 
     suspend fun getAvailableModels(provider: Provider): List<String> {
         return try {
+            if (!networkMonitor.isConnected()) {
+                return Model.defaultModels(provider).map { it.id }
+            }
             val apiKey = settingsRepository.getApiKey(provider) ?: return emptyList()
             streamingClient.getModels(
                 baseUrl = settingsRepository.getBaseUrl(provider),
