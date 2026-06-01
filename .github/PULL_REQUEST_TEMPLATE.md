@@ -1,4 +1,4 @@
-## Description
+## 📋 Description
 
 **What:** <!-- Summary of changes -->
 
@@ -6,39 +6,62 @@
 
 **How:** <!-- Brief technical approach -->
 
-## Related Issues
+## 🎯 Target Branch
 
-<!-- Link related issues: Closes #123, Resolves #456 -->
+- [ ] `develop` (feature/bugfix)
+- [ ] `staging` (pre-production)
+- [ ] `main` (production release)
+- [ ] `hotfix` (emergency fix)
 
-## Type of Change
+## 📦 Type of Change
 
 - [ ] 🚀 Feature (new functionality)
 - [ ] 🐛 Bug fix (resolves an issue)
-- [ ] ♻️ Refactor (code improvement, no behavior change)
+- [ ] 🔥 Hotfix (critical production fix)
+- [ ] ♻️ Refactor (code improvement)
 - [ ] 📝 Documentation update
 - [ ] 🎨 UI/UX change
-- [ ] ⚙️ Configuration/CI change
-- [ ] 🔥 Hotfix (critical production fix)
+- [ ] ⚙️ CI/CD configuration
+- [ ] 🔒 Security fix
 
-## Screenshots / GIFs
+## 🔗 Related Issues
 
-<!-- For UI changes, add visual evidence -->
+<!-- Closes #123, Resolves #456 -->
 
-## Checklist
+## 📸 Screenshots / GIFs
 
-- [ ] My code follows the project's coding standards
-- [ ] I have performed a self-review of my code
-- [ ] I have commented my code where necessary
-- [ ] I have updated documentation accordingly
-- [ ] My changes generate no new warnings
-- [ ] I have added tests that prove my fix/feature works
-- [ ] New and existing unit tests pass locally
-- [ ] Any dependent changes have been merged and published
+<!-- For UI changes -->
 
-## Testing
+## ✅ Checklist
 
-<!-- Describe how you tested your changes -->
+### Code Quality
+- [ ] My code follows the project coding standards
+- [ ] I have performed a self-review
+- [ ] I have added/updated unit tests
+- [ ] New and existing tests pass locally
+- [ ] No new lint warnings
 
-## Additional Notes
+### Documentation
+- [ ] I have updated documentation
+- [ ] I have updated the CHANGELOG (if applicable)
 
-<!-- Any other context or information reviewers should know -->
+### Testing
+- [ ] Tested on API 26+ (minimum)
+- [ ] Tested on latest Android version
+- [ ] Tested dark mode (if UI change)
+- [ ] Tested offline behavior (if data change)
+
+### Production Readiness (for `main` PRs)
+- [ ] All CI/CD checks pass
+- [ ] Staging environment tested
+- [ ] Performance benchmarked
+- [ ] Security reviewed
+- [ ] Rollback plan documented
+
+## 🧪 Testing Instructions
+
+<!-- Step-by-step instructions for reviewers -->
+
+## 📝 Additional Notes
+
+<!-- Any other context -->

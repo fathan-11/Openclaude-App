@@ -1,0 +1,7 @@
+{
+  "title": "REFACTOR: {area_of_change}",
+  "body": "## \ud83d\udccb Description\n\n**What:** Refactored {area_of_change}\n**Why:** {reason_for_refactor}\n**How:** {approach}\n\n## \ud83c\udfaf Target Branch\n- [ ] `develop`\n\n## \ud83d\udce6 Type of Change\n- [x] \u267b\ufe0f Refactor\n\n## \ud83d\udd17 Related Issues\nRelates to #{issue_number}\n\n## \ud83d\udcca Impact\n- Performance: {performance_change}\n- Readability: {readability_change}\n- Maintainability: {maintainability_change}\n\n## \u2705 Checklist\n- [ ] No behavior change\n- [ ] All tests still pass\n- [ ] Code is cleaner\n- [ ] Documentation updated\n\n## \ud83e\uddea Testing\n{testing_steps}\n",
+  "head": "refactor/{branch_name}",
+  "base": "develop",
+  "draft": false
+}
