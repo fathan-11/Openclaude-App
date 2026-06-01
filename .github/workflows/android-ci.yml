@@ -21,9 +21,8 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+        with:
+          gradle-version: '8.5'
 
       - name: Run Lint
         run: gradle lintDebug
@@ -63,6 +62,8 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.5'
 
       - name: Build Release APK
         run: gradle assembleRelease
