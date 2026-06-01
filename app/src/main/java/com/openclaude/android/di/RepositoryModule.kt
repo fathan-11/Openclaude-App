@@ -21,6 +21,18 @@ import com.openclaude.android.domain.usecase.GetDiffUseCase
 import com.openclaude.android.domain.usecase.ExecuteToolUseCase
 import com.openclaude.android.domain.usecase.ManageMcpUseCase
 import com.openclaude.android.domain.usecase.RunCommandUseCase
+import com.openclaude.android.data.remote.GitHubApiService
+import com.openclaude.android.data.repository.GitHubRepository
+import com.openclaude.android.domain.usecase.LoadReposUseCase
+import com.openclaude.android.domain.usecase.GetRepoDetailsUseCase
+import com.openclaude.android.domain.usecase.GetPullRequestsUseCase
+import com.openclaude.android.domain.usecase.GetIssuesUseCase
+import com.openclaude.android.domain.usecase.GetCommitsUseCase
+import com.openclaude.android.domain.usecase.CreateIssueUseCase
+import com.openclaude.android.domain.usecase.CreatePullRequestUseCase
+import com.openclaude.android.domain.usecase.VoiceUseCase
+import com.openclaude.android.domain.usecase.SkillsUseCase
+import com.openclaude.android.domain.usecase.MemoryUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -135,5 +147,87 @@ object RepositoryModule {
         mcpRepository: McpRepository
     ): ManageMcpUseCase {
         return ManageMcpUseCase(mcpRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGitHubRepository(
+        gitHubApiService: GitHubApiService
+    ): GitHubRepository {
+        return GitHubRepository(gitHubApiService)
+    }
+
+    @Provides
+    @Singleton
+    fun provideLoadReposUseCase(
+        gitHubRepository: GitHubRepository
+    ): LoadReposUseCase {
+        return LoadReposUseCase(gitHubRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGetRepoDetailsUseCase(
+        gitHubRepository: GitHubRepository
+    ): GetRepoDetailsUseCase {
+        return GetRepoDetailsUseCase(gitHubRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGetPullRequestsUseCase(
+        gitHubRepository: GitHubRepository
+    ): GetPullRequestsUseCase {
+        return GetPullRequestsUseCase(gitHubRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGetIssuesUseCase(
+        gitHubRepository: GitHubRepository
+    ): GetIssuesUseCase {
+        return GetIssuesUseCase(gitHubRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGetCommitsUseCase(
+        gitHubRepository: GitHubRepository
+    ): GetCommitsUseCase {
+        return GetCommitsUseCase(gitHubRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCreateIssueUseCase(
+        gitHubRepository: GitHubRepository
+    ): CreateIssueUseCase {
+        return CreateIssueUseCase(gitHubRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideCreatePullRequestUseCase(
+        gitHubRepository: GitHubRepository
+    ): CreatePullRequestUseCase {
+        return CreatePullRequestUseCase(gitHubRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideVoiceUseCase(): VoiceUseCase {
+        return VoiceUseCase()
+    }
+
+    @Provides
+    @Singleton
+    fun provideSkillsUseCase(): SkillsUseCase {
+        return SkillsUseCase()
+    }
+
+    @Provides
+    @Singleton
+    fun provideMemoryUseCase(): MemoryUseCase {
+        return MemoryUseCase()
     }
 }

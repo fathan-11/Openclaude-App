@@ -15,6 +15,7 @@ import androidx.navigation.navArgument
 import com.openclaude.android.ui.screens.chat.ChatScreen
 import com.openclaude.android.ui.screens.conversations.ConversationListScreen
 import com.openclaude.android.ui.screens.settings.SettingsScreen
+import com.openclaude.android.ui.screens.settings.AboutScreen
 import com.openclaude.android.ui.screens.files.FileBrowserScreen
 import com.openclaude.android.ui.screens.codeviewer.CodeViewerScreen
 import com.openclaude.android.ui.screens.search.SearchScreen
@@ -22,6 +23,13 @@ import com.openclaude.android.ui.screens.diff.DiffViewerScreen
 import com.openclaude.android.ui.screens.terminal.TerminalScreen
 import com.openclaude.android.ui.screens.tools.ToolOutputScreen
 import com.openclaude.android.ui.screens.mcp.McpScreen
+import com.openclaude.android.ui.screens.github.ReposScreen
+import com.openclaude.android.ui.screens.github.PullRequestsScreen
+import com.openclaude.android.ui.screens.github.IssuesScreen
+import com.openclaude.android.ui.screens.advanced.VoiceScreen
+import com.openclaude.android.ui.screens.advanced.SkillsScreen
+import com.openclaude.android.ui.screens.advanced.MemoryScreen
+import com.openclaude.android.ui.screens.advanced.TasksScreen
 import com.openclaude.android.data.model.DiffResult
 import com.openclaude.android.data.model.DiffHunk
 import com.openclaude.android.ui.components.BottomNav
@@ -39,8 +47,8 @@ val bottomNavItems = listOf(
     BottomNavItem("Files", Icons.Default.Folder, Routes.FILES),
     BottomNavItem("Search", Icons.Default.Search, Routes.SEARCH),
     BottomNavItem("Terminal", Icons.Default.Terminal, Routes.TERMINAL),
+    BottomNavItem("GitHub", Icons.Default.Code, Routes.REPOS),
     BottomNavItem("Tools", Icons.Default.Build, Routes.TOOLS),
-    BottomNavItem("MCP", Icons.Default.Hub, Routes.MCP),
     BottomNavItem("Settings", Icons.Default.Settings, Routes.SETTINGS),
 )
 
@@ -153,6 +161,56 @@ fun NavGraph() {
                 // DiffViewerScreen requires a DiffResult - this would need to be loaded via ViewModel
                 // For now, placeholder that navigates back
                 // In a full implementation, use a DiffViewerViewModel to load the diff
+            }
+            // GitHub Integration routes
+            composable(Routes.REPOS) {
+                ReposScreen(
+                    onRepoClick = { owner, repo ->
+                        navController.navigate(Routes.prsWithRepo(owner, repo))
+                    }
+                )
+            }
+            composable(
+                Routes.PRS,
+                arguments = listOf(
+                    navArgument("owner") { type = NavType.StringType },
+                    navArgument("repo") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val owner = backStackEntry.arguments?.getString("owner") ?: ""
+                val repo = backStackEntry.arguments?.getString("repo") ?: ""
+                PullRequestsScreen(
+                    owner = owner,
+                    repo = repo,
+                    onPRClick = { /* Navigate to PR detail if needed */ }
+                )
+            }
+            composable(
+                Routes.ISSUES,
+                arguments = listOf(
+                    navArgument("owner") { type = NavType.StringType },
+                    navArgument("repo") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val owner = backStackEntry.arguments?.getString("owner") ?: ""
+                val repo = backStackEntry.arguments?.getString("repo") ?: ""
+                IssuesScreen(owner = owner, repo = repo)
+            }
+            // Advanced features routes
+            composable(Routes.VOICE) {
+                VoiceScreen()
+            }
+            composable(Routes.SKILLS) {
+                SkillsScreen()
+            }
+            composable(Routes.MEMORY) {
+                MemoryScreen()
+            }
+            composable(Routes.TASKS) {
+                TasksScreen()
+            }
+            composable(Routes.ABOUT) {
+                AboutScreen()
             }
         }
     }

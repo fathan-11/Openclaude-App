@@ -6,6 +6,7 @@ import com.openclaude.android.data.remote.FileApiService
 import com.openclaude.android.data.remote.McpApiService
 import com.openclaude.android.data.remote.TerminalApiService
 import com.openclaude.android.data.remote.ToolApiService
+import com.openclaude.android.data.remote.GitHubApiService
 import com.openclaude.android.data.remote.StreamingClient
 import com.openclaude.android.data.repository.SettingsRepository
 import com.squareup.moshi.Moshi
@@ -86,6 +87,12 @@ object AppModule {
     @Singleton
     fun provideMcpApiService(retrofit: Retrofit): McpApiService {
         return retrofit.create(McpApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGitHubApiService(retrofit: Retrofit): GitHubApiService {
+        return retrofit.create(GitHubApiService::class.java)
     }
 
     @Provides
