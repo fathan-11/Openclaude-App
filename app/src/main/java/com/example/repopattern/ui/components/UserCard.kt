@@ -13,12 +13,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -34,10 +32,6 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.repopattern.data.model.User
 
-/**
- * UserCard — displays user avatar, name, and email.
- * Design tokens: elevation.sm (2dp), radius.lg (12dp), spacing.lg (16dp)
- */
 @Composable
 fun UserCard(user: User, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -50,14 +44,14 @@ fun UserCard(user: User, onClick: () -> Unit, modifier: Modifier = Modifier) {
             .scale(scale)
             .clickable(
                 interactionSource = interactionSource,
-                indication = ripple(),
+                indication = null,
                 onClick = onClick
             )
             .semantics {
-                contentDescription = "User: ${user.fullName}, ${user.email}"
+                contentDescription = "User: ${'$'}{user.fullName}, ${'$'}{user.email}"
             },
-        shape = RoundedCornerShape(12.dp),  // radius.lg
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),  // elevation.sm
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         )
@@ -65,28 +59,28 @@ fun UserCard(user: User, onClick: () -> Unit, modifier: Modifier = Modifier) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),  // spacing.lg
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             AsyncImage(
                 model = user.avatarUrl,
-                contentDescription = "Avatar of ${user.fullName}",
+                contentDescription = "Avatar of ${'$'}{user.fullName}",
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape),
                 contentScale = ContentScale.Crop
             )
-            Spacer(modifier = Modifier.width(16.dp))  // spacing.lg
+            Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = user.fullName,
-                    style = MaterialTheme.typography.titleMedium,  // variant: subtitle1
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = user.email,
-                    style = MaterialTheme.typography.bodySmall,  // variant: body2
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }

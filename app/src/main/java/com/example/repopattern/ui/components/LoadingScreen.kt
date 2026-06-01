@@ -21,30 +21,26 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.repopattern.ui.theme.ShimmerBase
 import com.example.repopattern.ui.theme.ShimmerBaseDark
 import com.example.repopattern.ui.theme.ShimmerHighlight
 import com.example.repopattern.ui.theme.ShimmerHighlightDark
 
-/**
- * LoadingScreen — shimmer skeleton during initial load.
- * Shows 6 skeleton cards matching UserCard layout.
- */
 @Composable
 fun LoadingScreen(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp),  // spacing.lg
-        verticalArrangement = Arrangement.spacedBy(12.dp)  // spacing.md
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         repeat(6) { ShimmerUserCard() }
     }
@@ -75,12 +71,11 @@ private fun ShimmerUserCard() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))  // radius.lg
+            .clip(RoundedCornerShape(12.dp))
             .background(MaterialTheme.colorScheme.surface)
-            .padding(16.dp),  // spacing.lg
+            .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Avatar skeleton
         Box(
             modifier = Modifier
                 .size(48.dp)
@@ -89,7 +84,6 @@ private fun ShimmerUserCard() {
         )
         Spacer(modifier = Modifier.width(16.dp))
         Column {
-            // Name skeleton
             Box(
                 modifier = Modifier
                     .height(16.dp)
@@ -98,7 +92,6 @@ private fun ShimmerUserCard() {
                     .background(brush)
             )
             Spacer(modifier = Modifier.height(8.dp))
-            // Email skeleton
             Box(
                 modifier = Modifier
                     .height(12.dp)
