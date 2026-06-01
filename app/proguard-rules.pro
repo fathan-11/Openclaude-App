@@ -1,6 +1,14 @@
-# ============================================================
-# ProGuard rules for OpenClaude Android
-# ============================================================
+# Add project specific ProGuard rules here.
+-keep class com.openclaude.android.data.remote.dto.** { *; }
+-keep class com.openclaude.android.data.model.** { *; }
+-keepclassmembers class * {
+    @com.squareup.moshi.Json <fields>;
+}
+-keep @com.squareup.moshi.JsonQualifier interface *
+
+# Moshi
+-keepclassmembers class com.openclaude.android.data.model.** { *; }
+-keep class com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 
 # --- General Kotlin ---
 -keepattributes *Annotation*
@@ -83,36 +91,11 @@
 # --- Room ---
 -keep class * extends androidx.room.RoomDatabase
 -keep @androidx.room.Entity class *
--keepclassmembers class * {
-    @androidx.room.* <fields>;
-    @androidx.room.* <methods>;
-}
--dontwarn androidx.room.**
 
-# --- DataStore ---
--keepclassmembers class * extends androidx.datastore.preferences.protobuf.GeneratedMessageLite {
-    <fields>;
-}
+# Coroutines
+-keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
+-keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
 
-# --- Compose ---
--dontwarn androidx.compose.**
-
-# --- AndroidX ---
--keep class androidx.lifecycle.** { *; }
--keep class androidx.navigation.** { *; }
-
-# --- OpenClaude app models (keep all data classes for serialization) ---
--keep class com.openclaude.android.data.model.** { *; }
--keep class com.openclaude.android.data.remote.dto.** { *; }
--keep class com.openclaude.android.data.local.** { *; }
-
-# --- Enum safety ---
--keepclassmembers enum * {
-    public static **[] values();
-    public static ** valueOf(java.lang.String);
-}
-
-# --- Parcelable ---
--keepclassmembers class * implements android.os.Parcelable {
-    public static final ** CREATOR;
-}
+# OkHttp
+-dontwarn okhttp3.**
+-dontwarn okio.**
