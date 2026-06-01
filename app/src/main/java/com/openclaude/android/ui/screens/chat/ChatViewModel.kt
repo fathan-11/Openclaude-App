@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.openclaude.android.data.model.Model
 import com.openclaude.android.data.model.Provider
+import com.openclaude.android.data.network.NetworkConnectivityMonitor
+import com.openclaude.android.data.network.NetworkState
 import com.openclaude.android.data.remote.StreamEvent
 import com.openclaude.android.data.repository.ChatRepository
 import com.openclaude.android.data.repository.SettingsRepository
@@ -12,6 +14,9 @@ import com.openclaude.android.domain.model.MessageUiModel
 import com.openclaude.android.domain.usecase.SendMessageUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -20,10 +25,16 @@ class ChatViewModel @Inject constructor(
     private val sendMessageUseCase: SendMessageUseCase,
     private val chatRepository: ChatRepository,
     private val settingsRepository: SettingsRepository,
+    private val networkMonitor: NetworkConnectivityMonitor,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ChatUiState())
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
+
+    /** Whether the device is currently online. */
+    val isOnline: StateFlow<Boolean> = networkMonitor.observe()
+        .map { it is NetworkState.Connected }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), networkMonitor.isConnected())
 
     private var currentConversationId: String? = null
     private var lastMessageContent: String? = null
