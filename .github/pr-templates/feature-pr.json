@@ -1,0 +1,7 @@
+{
+  "title": "FEAT: {feature_name}",
+  "body": "## \ud83d\udccb Description\n\n**What:** {description}\n**Why:** {reason}\n**How:** {approach}\n\n## \ud83c\udfaf Target Branch\n- [ ] `develop` (feature)\n- [ ] `staging` (pre-production)\n- [ ] `main` (production)\n\n## \ud83d\udce6 Type of Change\n- [x] \ud83d\ude80 Feature\n\n## \ud83d\udd17 Related Issues\nCloses #{issue_number}\n\n## \u2705 Checklist\n- [ ] Code follows standards\n- [ ] Self-review done\n- [ ] Tests added\n- [ ] Documentation updated\n- [ ] No lint warnings\n\n## \ud83e\uddea Testing\n{testing_steps}\n",
+  "head": "feature/{branch_name}",
+  "base": "develop",
+  "draft": false
+}

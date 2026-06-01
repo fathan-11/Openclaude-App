@@ -1,0 +1,38 @@
+# ============================================================
+# CODEOWNERS - Automatic Review Assignment
+# ============================================================
+# Each line is a file pattern followed by one or more owners.
+# These owners will be automatically requested for review
+# when a pull request modifies matching files.
+# ============================================================
+
+# Default: @fathan-11 owns everything
+*                           @fathan-11
+
+# CI/CD & GitHub Config
+.github/                    @fathan-11
+*.yml                       @fathan-11
+*.yaml                      @fathan-11
+
+# Build System
+*.gradle.kts                @fathan-11
+gradle/                     @fathan-11
+gradle.properties           @fathan-11
+
+# Android Manifest & Resources
+app/src/main/AndroidManifest.xml    @fathan-11
+app/src/main/res/                   @fathan-11
+
+# Data Layer (critical)
+app/src/main/java/com/example/repopattern/data/         @fathan-11
+app/src/main/java/com/example/repopattern/di/           @fathan-11
+
+# Domain Layer
+app/src/main/java/com/example/repopattern/domain/       @fathan-11
+
+# UI Layer
+app/src/main/java/com/example/repopattern/ui/           @fathan-11
+
+# Documentation
+docs/                       @fathan-11
+*.md                        @fathan-11

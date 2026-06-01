@@ -1,0 +1,49 @@
+name: Deploy to Development
+
+on:
+  push:
+    branches: [develop]
+
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    name: 🚀 Deploy to Dev
+    runs-on: ubuntu-latest
+    environment:
+      name: development
+      url: https://dev.openclaude-app.fathan-11.dev
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.5'
+
+      - name: Run Tests
+        run: gradle testDebugUnitTest
+
+      - name: Build Debug APK
+        run: gradle assembleDebug
+
+      - name: Upload Dev APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: dev-apk-${{ github.sha }}
+          path: app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Notify Deployment
+        run: |
+          echo "🚀 Deployed to Development"
+          echo "Commit: ${{ github.sha }}"
+          echo "Author: ${{ github.actor }}"
+          echo "Time: $(date -u)"

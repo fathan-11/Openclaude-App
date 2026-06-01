@@ -8,6 +8,7 @@
 .externalNativeBuild
 .cxx
 local.properties
+<<<<<<< HEAD
 *.apk
 *.aab
 *.jks
@@ -16,3 +17,14 @@ local.properties
 /app/release/
 *.log
 .env
+=======
+/app/build
+*.apk
+*.aab
+*.dex
+*.class
+*.log
+*.tmp
+*.bak
+*.swp
+>>>>>>> origin/main

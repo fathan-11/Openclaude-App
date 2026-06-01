@@ -1,0 +1,269 @@
+{
+  "name": "Openclaude-App Development",
+  "description": "Project board for tracking Openclaude-App development workflow",
+  "readme": "# \ud83d\udccb Openclaude-App Project Board\n\n## Board Columns\n\n### \ud83d\udce5 Backlog\nTasks planned for future sprints.\n\n### \ud83d\udcdd To Do\nTasks ready to be worked on.\n\n### \ud83d\udd04 In Progress\nCurrently active tasks.\n\n### \ud83d\udc40 In Review\nTasks under code review (PR open).\n\n### \u2705 Done\nCompleted and merged tasks.\n\n### \ud83d\ude80 Released\nDeployed to production.\n\n## Labels\n\n| Label | Color | Description |\n|-------|-------|-------------|\n| `feature` | \ud83d\udfe2 Green | New features |\n| `bug` | \ud83d\udd34 Red | Bug reports |\n| `hotfix` | \ud83d\udfe0 Orange | Emergency fixes |\n| `refactor` | \ud83d\udfe1 Yellow | Code refactoring |\n| `docs` | \ud83d\udd35 Blue | Documentation |\n| `ci/cd` | \ud83d\udfe3 Purple | CI/CD pipeline |\n| `security` | \u26ab Black | Security issues |\n| `priority: high` | \ud83d\udd34 Red | High priority |\n| `priority: medium` | \ud83d\udfe1 Yellow | Medium priority |\n| `priority: low` | \ud83d\udfe2 Green | Low priority |\n\n## Milestones\n\n| Milestone | Due Date | Description |\n|-----------|----------|-------------|\n| v1.0.0 - MVP | - | Initial release |\n| v1.1.0 - Features | - | Feature additions |\n| v1.2.0 - Polish | - | UI/UX improvements |\n| v2.0.0 - V2 | - | Major version update |\n\n## Automation\n\n- New issues \u2192 Backlog\n- PR opened \u2192 In Review\n- PR merged \u2192 Done\n- Release created \u2192 Released\n",
+  "columns": [
+    {
+      "name": "\ud83d\udce5 Backlog",
+      "description": "Tasks planned for future sprints"
+    },
+    {
+      "name": "\ud83d\udcdd To Do",
+      "description": "Tasks ready to be worked on"
+    },
+    {
+      "name": "\ud83d\udd04 In Progress",
+      "description": "Currently active tasks"
+    },
+    {
+      "name": "\ud83d\udc40 In Review",
+      "description": "Tasks under code review"
+    },
+    {
+      "name": "\u2705 Done",
+      "description": "Completed and merged tasks"
+    },
+    {
+      "name": "\ud83d\ude80 Released",
+      "description": "Deployed to production"
+    }
+  ],
+  "labels": [
+    {
+      "name": "feature",
+      "color": "0E8A16",
+      "description": "New features"
+    },
+    {
+      "name": "bug",
+      "color": "D73A4A",
+      "description": "Bug reports"
+    },
+    {
+      "name": "hotfix",
+      "color": "E99695",
+      "description": "Emergency fixes"
+    },
+    {
+      "name": "refactor",
+      "color": "FBCA04",
+      "description": "Code refactoring"
+    },
+    {
+      "name": "docs",
+      "color": "0075CA",
+      "description": "Documentation"
+    },
+    {
+      "name": "ci/cd",
+      "color": "7B68EE",
+      "description": "CI/CD pipeline"
+    },
+    {
+      "name": "security",
+      "color": "000000",
+      "description": "Security issues"
+    },
+    {
+      "name": "priority: high",
+      "color": "B60205",
+      "description": "High priority"
+    },
+    {
+      "name": "priority: medium",
+      "color": "FBCA04",
+      "description": "Medium priority"
+    },
+    {
+      "name": "priority: low",
+      "color": "0E8A16",
+      "description": "Low priority"
+    },
+    {
+      "name": "android",
+      "color": "3DDC84",
+      "description": "Android platform"
+    },
+    {
+      "name": "kotlin",
+      "color": "7F52FF",
+      "description": "Kotlin language"
+    },
+    {
+      "name": "compose",
+      "color": "4285F4",
+      "description": "Jetpack Compose UI"
+    },
+    {
+      "name": "architecture",
+      "color": "E99695",
+      "description": "Architecture changes"
+    }
+  ],
+  "milestones": [
+    {
+      "title": "v1.0.0 - MVP",
+      "description": "Initial release with core features"
+    },
+    {
+      "title": "v1.1.0 - Features",
+      "description": "Feature additions and improvements"
+    },
+    {
+      "title": "v1.2.0 - Polish",
+      "description": "UI/UX improvements and optimization"
+    },
+    {
+      "title": "v2.0.0 - V2",
+      "description": "Major version update with breaking changes"
+    }
+  ],
+  "issues": [
+    {
+      "title": "Set up branch protection rules for main",
+      "labels": [
+        "ci/cd",
+        "priority: high"
+      ],
+      "milestone": "v1.0.0 - MVP",
+      "column": "\ud83d\udcdd To Do",
+      "body": "Configure branch protection for main branch:\n- 2 approvals required\n- CI must pass\n- No direct commits\n- No force pushes"
+    },
+    {
+      "title": "Set up GitHub Environments (dev, staging, prod)",
+      "labels": [
+        "ci/cd",
+        "priority: high"
+      ],
+      "milestone": "v1.0.0 - MVP",
+      "column": "\ud83d\udcdd To Do",
+      "body": "Create 3 GitHub environments:\n- development (no protection)\n- staging (1 approval)\n- production (1 approval + 5min wait)"
+    },
+    {
+      "title": "Add signing keystore secrets",
+      "labels": [
+        "ci/cd",
+        "security",
+        "priority: high"
+      ],
+      "milestone": "v1.0.0 - MVP",
+      "column": "\ud83d\udcdd To Do",
+      "body": "Add GitHub secrets:\n- SIGNING_KEY\n- ALIAS\n- KEY_STORE_PASSWORD\n- KEY_PASSWORD"
+    },
+    {
+      "title": "Implement user search functionality",
+      "labels": [
+        "feature",
+        "priority: medium"
+      ],
+      "milestone": "v1.1.0 - Features",
+      "column": "\ud83d\udce5 Backlog",
+      "body": "Add search bar to user list screen with real-time filtering."
+    },
+    {
+      "title": "Add pull-to-refresh gesture",
+      "labels": [
+        "feature",
+        "compose",
+        "priority: medium"
+      ],
+      "milestone": "v1.1.0 - Features",
+      "column": "\ud83d\udce5 Backlog",
+      "body": "Implement pull-to-refresh on user list to reload data from API."
+    },
+    {
+      "title": "Implement offline caching with Room",
+      "labels": [
+        "feature",
+        "architecture",
+        "priority: medium"
+      ],
+      "milestone": "v1.1.0 - Features",
+      "column": "\ud83d\udce5 Backlog",
+      "body": "Cache API responses in Room database for offline access."
+    },
+    {
+      "title": "Add dark mode support",
+      "labels": [
+        "feature",
+        "compose",
+        "priority: low"
+      ],
+      "milestone": "v1.2.0 - Polish",
+      "column": "\ud83d\udce5 Backlog",
+      "body": "Implement dark theme with system-follow and manual toggle."
+    },
+    {
+      "title": "Add unit tests for ViewModels",
+      "labels": [
+        "refactor",
+        "priority: medium"
+      ],
+      "milestone": "v1.0.0 - MVP",
+      "column": "\ud83d\udcdd To Do",
+      "body": "Write unit tests for:\n- UserListViewModel\n- UserDetailViewModel"
+    },
+    {
+      "title": "Add UI tests with Compose Testing",
+      "labels": [
+        "refactor",
+        "compose",
+        "priority: low"
+      ],
+      "milestone": "v1.2.0 - Polish",
+      "column": "\ud83d\udce5 Backlog",
+      "body": "Add instrumented UI tests for Compose screens."
+    },
+    {
+      "title": "Implement error retry mechanism",
+      "labels": [
+        "feature",
+        "priority: medium"
+      ],
+      "milestone": "v1.1.0 - Features",
+      "column": "\ud83d\udce5 Backlog",
+      "body": "Add automatic retry with exponential backoff for failed API calls."
+    },
+    {
+      "title": "Add app icon and splash screen",
+      "labels": [
+        "feature",
+        "priority: low"
+      ],
+      "milestone": "v1.2.0 - Polish",
+      "column": "\ud83d\udce5 Backlog",
+      "body": "Design and implement custom app icon and animated splash screen."
+    },
+    {
+      "title": "Set up Firebase Analytics",
+      "labels": [
+        "feature",
+        "priority: low"
+      ],
+      "milestone": "v2.0.0 - V2",
+      "column": "\ud83d\udce5 Backlog",
+      "body": "Integrate Firebase Analytics for user behavior tracking."
+    },
+    {
+      "title": "Implement user creation form",
+      "labels": [
+        "feature",
+        "priority: medium"
+      ],
+      "milestone": "v1.1.0 - Features",
+      "column": "\ud83d\udce5 Backlog",
+      "body": "Add form to create new users with validation."
+    },
+    {
+      "title": "Add dependency security scanning",
+      "labels": [
+        "security",
+        "ci/cd",
+        "priority: medium"
+      ],
+      "milestone": "v1.0.0 - MVP",
+      "column": "\ud83d\udcdd To Do",
+      "body": "Configure dependency scanning in CI/CD pipeline."
+    }
+  ]
+}

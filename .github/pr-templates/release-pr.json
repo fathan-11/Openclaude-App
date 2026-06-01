@@ -1,0 +1,7 @@
+{
+  "title": "RELEASE: v{version}",
+  "body": "## \ud83d\ude80 Release v{version}\n\n**Target:** staging \u2192 main\n\n## \ud83d\udce6 Version\n- Previous: v{previous_version}\n- New: v{new_version}\n- Type: {major|minor|patch}\n\n## \ud83d\udcdd Changelog\n{changelog_entries}\n\n## \u2705 Release Checklist\n- [ ] All features complete\n- [ ] All bugs fixed\n- [ ] Tests passing\n- [ ] Documentation updated\n- [ ] CHANGELOG updated\n- [ ] Version bumped\n- [ ] Staging tested\n- [ ] Performance verified\n- [ ] Security reviewed\n\n## \ud83e\uddea Testing\n{testing_steps}\n\n## \ud83d\udccb Post-Release\n- [ ] Monitor production\n- [ ] Verify Play Store deployment\n- [ ] Announce release\n",
+  "head": "staging",
+  "base": "main",
+  "draft": false
+}
