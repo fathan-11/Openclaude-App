@@ -2,6 +2,7 @@ package com.openclaude.android.domain.usecase
 
 import com.openclaude.android.data.model.Model
 import com.openclaude.android.data.model.Provider
+import com.openclaude.android.data.remote.ApiError
 import com.openclaude.android.data.remote.StreamEvent
 import com.openclaude.android.data.repository.ChatRepository
 import kotlinx.coroutines.flow.Flow
@@ -16,7 +17,15 @@ class SendMessageUseCase @Inject constructor(
         provider: Provider,
         model: Model,
     ): Flow<StreamEvent> {
+        // Validate inputs
+        if (content.isBlank()) {
+            throw ApiError.ClientError("Message cannot be empty")
+        }
+        
+        // Save user message first
         chatRepository.saveUserMessage(conversationId, content)
+        
+        // Stream the response
         return chatRepository.streamAssistantResponse(conversationId, provider, model)
     }
 }

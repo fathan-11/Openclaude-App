@@ -20,6 +20,7 @@ import com.openclaude.android.core.ui.components.MessageInput
 import com.openclaude.android.core.ui.components.ProviderChip
 import com.openclaude.android.data.model.Model
 import com.openclaude.android.data.model.Provider
+import com.openclaude.android.data.remote.ApiError
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -104,37 +105,20 @@ fun ChatScreen(
             }
         }
 
-        // Error banner
+        // Error banner with retry button and error type icon
         AnimatedVisibility(
             visible = uiState.error != null,
             enter = fadeIn() + slideInVertically(),
             exit = fadeOut() + slideOutVertically()
         ) {
             uiState.error?.let { error ->
-                Surface(
-                    color = MaterialTheme.colorScheme.errorContainer,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier.padding(12.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = error,
-                            color = MaterialTheme.colorScheme.onErrorContainer,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.weight(1f)
-                        )
-                        IconButton(onClick = { viewModel.clearError() }) {
-                            Icon(
-                                Icons.Default.Close,
-                                contentDescription = "Dismiss",
-                                tint = MaterialTheme.colorScheme.onErrorContainer
-                            )
-                        }
-                    }
-                }
+                ErrorBanner(
+                    error = error,
+                    errorType = uiState.errorType,
+                    canRetry = uiState.canRetry,
+                    onDismiss = { viewModel.clearError() },
+                    onRetry = { viewModel.retryLastMessage() }
+                )
             }
         }
 
@@ -209,5 +193,80 @@ fun ChatScreen(
             onSendMessage = { viewModel.sendMessage(it) },
             isLoading = uiState.isLoading
         )
+    }
+}
+
+@Composable
+private fun ErrorBanner(
+    error: String,
+    errorType: ApiError?,
+    canRetry: Boolean,
+    onDismiss: () -> Unit,
+    onRetry: () -> Unit,
+) {
+    val icon = when (errorType) {
+        is ApiError.NetworkError -> Icons.Default.CloudOff
+        is ApiError.TimeoutError -> Icons.Default.Timer
+        is ApiError.AuthError -> Icons.Default.Lock
+        is ApiError.RateLimitError -> Icons.Default.Speed
+        is ApiError.ServerError -> Icons.Default.ErrorOutline
+        else -> Icons.Default.Warning
+    }
+
+    Surface(
+        color = MaterialTheme.colorScheme.errorContainer,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onErrorContainer,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = error,
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.weight(1f)
+                )
+                IconButton(onClick = onDismiss) {
+                    Icon(
+                        Icons.Default.Close,
+                        contentDescription = "Dismiss",
+                        tint = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                }
+            }
+            
+            // Show retry button for transient errors
+            if (canRetry) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = onRetry,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        Icons.Default.Refresh,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Retry")
+                }
+            }
+        }
     }
 }

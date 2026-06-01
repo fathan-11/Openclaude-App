@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.openclaude.android.data.model.Model
 import com.openclaude.android.data.model.Provider
+import com.openclaude.android.data.remote.ApiError
 import com.openclaude.android.data.remote.StreamEvent
 import com.openclaude.android.data.repository.ChatRepository
 import com.openclaude.android.data.repository.SettingsRepository
@@ -26,6 +27,9 @@ class ChatViewModel @Inject constructor(
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
 
     private var currentConversationId: String? = null
+    private var lastMessageContent: String? = null
+    private var retryCount = 0
+    private val maxRetries = 3
 
     fun initialize(conversationId: String?) {
         val provider = settingsRepository.getSelectedProvider()
@@ -98,8 +102,11 @@ class ChatViewModel @Inject constructor(
         val convId = currentConversationId ?: return
         if (content.isBlank()) return
 
+        lastMessageContent = content
+        retryCount = 0
+
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
+            _uiState.update { it.copy(isLoading = true, error = null, canRetry = false) }
 
             try {
                 sendMessageUseCase(
@@ -113,7 +120,9 @@ class ChatViewModel @Inject constructor(
                             _uiState.update { it.copy(isStreaming = true) }
                         }
                         is StreamEvent.Done -> {
-                            _uiState.update { it.copy(isLoading = false, isStreaming = false) }
+                            _uiState.update { it.copy(isLoading = false, isStreaming = false, canRetry = false) }
+                            lastMessageContent = null
+                            retryCount = 0
                             // Update title from first user message
                             val messages = _uiState.value.messages
                             if (messages.size <= 3) {
@@ -125,26 +134,61 @@ class ChatViewModel @Inject constructor(
                             }
                         }
                         is StreamEvent.Error -> {
+                            val apiError = mapErrorToApiError(event.message)
                             _uiState.update {
                                 it.copy(
                                     isLoading = false,
                                     isStreaming = false,
                                     error = event.message,
+                                    errorType = apiError,
+                                    canRetry = apiError?.isRetryable == true && retryCount < maxRetries,
                                 )
                             }
                         }
                     }
                 }
             } catch (e: Exception) {
+                val apiError = chatRepository.mapExceptionToApiError(e)
                 _uiState.update {
                     it.copy(
                         isLoading = false,
                         isStreaming = false,
-                        error = e.message ?: "Unknown error",
+                        error = apiError.userMessage,
+                        errorType = apiError,
+                        canRetry = apiError.isRetryable && retryCount < maxRetries,
                     )
                 }
             }
         }
+    }
+
+    private fun mapErrorToApiError(errorMessage: String): ApiError? {
+        return when {
+            errorMessage.contains("timeout", ignoreCase = true) -> ApiError.TimeoutError(errorMessage)
+            errorMessage.contains("network", ignoreCase = true) ||
+            errorMessage.contains("connection", ignoreCase = true) -> ApiError.NetworkError(errorMessage)
+            errorMessage.contains("401", ignoreCase = true) ||
+            errorMessage.contains("403", ignoreCase = true) ||
+            errorMessage.contains("invalid api key", ignoreCase = true) -> ApiError.AuthError(errorMessage)
+            errorMessage.contains("429", ignoreCase = true) ||
+            errorMessage.contains("rate limit", ignoreCase = true) -> ApiError.RateLimitError(errorMessage)
+            errorMessage.contains("500", ignoreCase = true) ||
+            errorMessage.contains("502", ignoreCase = true) ||
+            errorMessage.contains("503", ignoreCase = true) ||
+            errorMessage.contains("server error", ignoreCase = true) -> ApiError.ServerError(errorMessage)
+            else -> ApiError.UnknownError(errorMessage)
+        }
+    }
+
+    fun retryLastMessage() {
+        val content = lastMessageContent ?: return
+        if (retryCount >= maxRetries) {
+            _uiState.update { it.copy(canRetry = false) }
+            return
+        }
+        
+        retryCount++
+        sendMessage(content)
     }
 
     fun setProvider(provider: Provider) {
@@ -161,7 +205,7 @@ class ChatViewModel @Inject constructor(
     }
 
     fun clearError() {
-        _uiState.update { it.copy(error = null) }
+        _uiState.update { it.copy(error = null, errorType = null, canRetry = false) }
     }
 
     fun newChat() {
