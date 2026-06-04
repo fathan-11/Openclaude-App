@@ -1,8 +1,10 @@
 package com.openclaude.android.ui.screens.files
 
-import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -24,16 +26,24 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.openclaude.android.data.model.FileNode
 import com.openclaude.android.data.model.GitStatus
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun FileBrowserScreen(
     onFileClick: (String) -> Unit,
     viewModel: FileBrowserViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var showCreateMenu by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.refreshGitStatus()
+    }
+
+    LaunchedEffect(uiState.operationMessage) {
+        uiState.operationMessage?.let {
+            kotlinx.coroutines.delay(2000)
+            viewModel.clearMessage()
+        }
     }
 
     Scaffold(
@@ -49,7 +59,6 @@ fun FileBrowserScreen(
                 },
                 actions = {
                     if (uiState.isGitRepo) {
-                        // Git status badge
                         val modifiedCount = uiState.gitStatus.values.count {
                             it in listOf(GitStatus.MODIFIED, GitStatus.MODIFIED_STAGED)
                         }
@@ -70,19 +79,68 @@ fun FileBrowserScreen(
                     }
                 }
             )
+        },
+        floatingActionButton = {
+            Column {
+                // Operation progress
+                if (uiState.operationInProgress) {
+                    CircularProgressIndicator(modifier = Modifier.padding(bottom = 8.dp))
+                }
+
+                // Operation message snackbar
+                uiState.operationMessage?.let { msg ->
+                    Snackbar(
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        action = {
+                            TextButton(onClick = { viewModel.clearMessage() }) {
+                                Text("OK")
+                            }
+                        }
+                    ) {
+                        Text(msg)
+                    }
+                }
+
+                // FAB with create options
+                Box {
+                    FloatingActionButton(
+                        onClick = { showCreateMenu = true }
+                    ) {
+                        Icon(Icons.Default.Add, "Create")
+                    }
+
+                    DropdownMenu(
+                        expanded = showCreateMenu,
+                        onDismissRequest = { showCreateMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("New File") },
+                            onClick = {
+                                showCreateMenu = false
+                                viewModel.showCreateDialog()
+                            },
+                            leadingIcon = { Icon(Icons.Default.NoteAdd, null) }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("New Folder") },
+                            onClick = {
+                                showCreateMenu = false
+                                viewModel.showCreateDialog()
+                            },
+                            leadingIcon = { Icon(Icons.Default.CreateNewFolder, null) }
+                        )
+                    }
+                }
+            }
         }
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            // Breadcrumb
             BreadcrumbNav(path = uiState.currentPath, onNavigate = { viewModel.loadFiles(it) })
 
-            // Git status legend (when in git repo)
             if (uiState.isGitRepo && uiState.gitStatus.isNotEmpty()) {
                 GitStatusLegend(
                     gitStatus = uiState.gitStatus,
-                    onStatusClick = { status ->
-                        viewModel.toggleGitStatusFilter(status)
-                    }
+                    onStatusClick = { status -> viewModel.toggleGitStatusFilter(status) }
                 )
             }
 
@@ -115,7 +173,11 @@ fun FileBrowserScreen(
                                 onClick = {
                                     if (file.isDirectory) viewModel.toggleFolder(file)
                                     else onFileClick(file.path)
-                                }
+                                },
+                                onLongClick = {
+                                    viewModel.showRenameDialog(file)
+                                },
+                                onDelete = { viewModel.showDeleteDialog(file) }
                             )
                         }
                     }
@@ -123,107 +185,146 @@ fun FileBrowserScreen(
             }
         }
     }
+
+    // Create dialog
+    if (uiState.showCreateDialog) {
+        CreateFileDialog(
+            onDismiss = { viewModel.dismissDialogs() },
+            onCreate = { name, isDirectory -> viewModel.createFile(name, isDirectory) }
+        )
+    }
+
+    // Delete dialog
+    if (uiState.showDeleteDialog && uiState.selectedFile != null) {
+        DeleteConfirmDialog(
+            fileName = uiState.selectedFile!!.name,
+            onDismiss = { viewModel.dismissDialogs() },
+            onConfirm = { viewModel.deleteSelectedFile() }
+        )
+    }
+
+    // Rename dialog
+    if (uiState.showRenameDialog && uiState.selectedFile != null) {
+        RenameFileDialog(
+            currentName = uiState.selectedFile!!.name,
+            newName = uiState.newName,
+            onNameChange = { viewModel.updateNewName(it) },
+            onDismiss = { viewModel.dismissDialogs() },
+            onConfirm = { viewModel.renameSelectedFile() }
+        )
+    }
 }
 
 @Composable
-private fun GitStatusLegend(
-    gitStatus: Map<String, GitStatus>,
-    onStatusClick: (GitStatus) -> Unit
+private fun CreateFileDialog(
+    onDismiss: () -> Unit,
+    onCreate: (String, Boolean) -> Unit
 ) {
-    val statusCounts = gitStatus.values.groupingBy { it }.eachCount()
-    if (statusCounts.isEmpty()) return
+    var name by remember { mutableStateOf("") }
+    var isDirectory by remember { mutableStateOf(false) }
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            "Git:",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontWeight = FontWeight.Bold
-        )
-
-        statusCounts.filter { it.key != GitStatus.CLEAN }.forEach { (status, count) ->
-            Surface(
-                onClick = { onStatusClick(status) },
-                shape = MaterialTheme.shapes.small,
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
-                modifier = Modifier
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    GitStatusIndicator(status, size = 8)
-                    Spacer(Modifier.width(4.dp))
-                    Text(
-                        "${status.symbol}$count",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontSize = 10.sp
-                    )
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(if (isDirectory) "New Folder" else "New File") },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Name") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(8.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(checked = isDirectory, onCheckedChange = { isDirectory = it })
+                    Text("Create as folder")
                 }
             }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { if (name.isNotBlank()) onCreate(name, isDirectory) },
+                enabled = name.isNotBlank()
+            ) { Text("Create") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
         }
-    }
+    )
 }
 
 @Composable
-private fun GitStatusIndicator(
-    status: GitStatus?,
-    size: Int = 12
+private fun DeleteConfirmDialog(
+    fileName: String,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
 ) {
-    val color = when (status) {
-        GitStatus.MODIFIED, GitStatus.MODIFIED_STAGED -> Color(0xFFFFC107) // Amber
-        GitStatus.ADDED, GitStatus.ADDED_STAGED -> Color(0xFF4CAF50) // Green
-        GitStatus.DELETED, GitStatus.DELETED_STAGED -> Color(0xFFF44336) // Red
-        GitStatus.UNTRACKED -> Color(0xFF9E9E9E) // Gray
-        GitStatus.CONFLICT -> Color(0xFFE91E63) // Pink
-        GitStatus.RENAMED, GitStatus.COPIED -> Color(0xFF2196F3) // Blue
-        GitStatus.CLEAN -> Color(0xFF4CAF50) // Green
-        GitStatus.NONE, null -> Color.Transparent
-    }
-
-    if (status != null && status != GitStatus.NONE) {
-        Box(
-            modifier = Modifier
-                .size(size.dp)
-                .clip(CircleShape)
-                .background(color)
-        )
-    }
-}
-
-@Composable
-private fun BreadcrumbNav(path: String, onNavigate: (String) -> Unit) {
-    val parts = path.split("/").filter { it.isNotEmpty() }
-
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        TextButton(onClick = { onNavigate("/") }) {
-            Text("root", fontSize = 12.sp)
-        }
-        parts.forEachIndexed { index, part ->
-            Text("/", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
-            TextButton(onClick = {
-                val subPath = "/" + parts.take(index + 1).joinToString("/")
-                onNavigate(subPath)
-            }) {
-                Text(part, fontSize = 12.sp)
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = { Icon(Icons.Default.Warning, null, tint = MaterialTheme.colorScheme.error) },
+        title = { Text("Delete $fileName?") },
+        text = { Text("This action cannot be undone.") },
+        confirmButton = {
+            TextButton(onClick = onConfirm, colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)) {
+                Text("Delete")
             }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
         }
-    }
+    )
 }
 
 @Composable
-private fun FileTreeItem(file: FileNode, onClick: () -> Unit) {
+private fun RenameFileDialog(
+    currentName: String,
+    newName: String,
+    onNameChange: (String) -> Unit,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Rename") },
+        text = {
+            OutlinedTextField(
+                value = newName,
+                onValueChange = onNameChange,
+                label = { Text("New name") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+        },
+        confirmButton = {
+            TextButton(
+                onClick = onConfirm,
+                enabled = newName.isNotBlank() && newName != currentName
+            ) { Text("Rename") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+        }
+    )
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun FileTreeItem(
+    file: FileNode,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+    onDelete: () -> Unit
+) {
+    var showMenu by remember { mutableStateOf(false) }
+
     Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        modifier = Modifier
+            .fillMaxWidth()
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            ),
         colors = CardDefaults.cardColors(
             containerColor = if (file.isDirectory) MaterialTheme.colorScheme.surfaceVariant
             else MaterialTheme.colorScheme.surface
@@ -233,7 +334,6 @@ private fun FileTreeItem(file: FileNode, onClick: () -> Unit) {
             modifier = Modifier.padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Git status indicator (left of icon)
             if (file.gitStatus != null && file.gitStatus != GitStatus.NONE) {
                 GitStatusIndicator(file.gitStatus)
                 Spacer(Modifier.width(8.dp))
@@ -275,6 +375,25 @@ private fun FileTreeItem(file: FileNode, onClick: () -> Unit) {
                     }
                 }
             }
+
+            Box {
+                IconButton(onClick = { showMenu = true }) {
+                    Icon(Icons.Default.MoreVert, "More options")
+                }
+                DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
+                    DropdownMenuItem(
+                        text = { Text("Rename") },
+                        onClick = { showMenu = false; onLongClick() },
+                        leadingIcon = { Icon(Icons.Default.Edit, null) }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Delete") },
+                        onClick = { showMenu = false; onDelete() },
+                        leadingIcon = { Icon(Icons.Default.Delete, null, tint = MaterialTheme.colorScheme.error) }
+                    )
+                }
+            }
+
             if (file.isDirectory) {
                 Icon(
                     if (file.isExpanded) Icons.Default.KeyboardArrowDown else Icons.Default.KeyboardArrowRight,
@@ -282,6 +401,61 @@ private fun FileTreeItem(file: FileNode, onClick: () -> Unit) {
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun GitStatusLegend(
+    gitStatus: Map<String, GitStatus>,
+    onStatusClick: (GitStatus) -> Unit
+) {
+    val statusCounts = gitStatus.values.groupingBy { it }.eachCount()
+    if (statusCounts.isEmpty()) return
+
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text("Git:", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold)
+        statusCounts.filter { it.key != GitStatus.CLEAN }.forEach { (status, count) ->
+            Surface(onClick = { onStatusClick(status) }, shape = MaterialTheme.shapes.small, color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)) {
+                Row(modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
+                    GitStatusIndicator(status, size = 8)
+                    Spacer(Modifier.width(4.dp))
+                    Text("${status.symbol}$count", style = MaterialTheme.typography.labelSmall, fontSize = 10.sp)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun GitStatusIndicator(status: GitStatus?, size: Int = 12) {
+    val color = when (status) {
+        GitStatus.MODIFIED, GitStatus.MODIFIED_STAGED -> Color(0xFFFFC107)
+        GitStatus.ADDED, GitStatus.ADDED_STAGED -> Color(0xFF4CAF50)
+        GitStatus.DELETED, GitStatus.DELETED_STAGED -> Color(0xFFF44336)
+        GitStatus.UNTRACKED -> Color(0xFF9E9E9E)
+        GitStatus.CONFLICT -> Color(0xFFE91E63)
+        GitStatus.RENAMED, GitStatus.COPIED -> Color(0xFF2196F3)
+        GitStatus.CLEAN -> Color(0xFF4CAF50)
+        GitStatus.NONE, null -> Color.Transparent
+    }
+    if (status != null && status != GitStatus.NONE) {
+        Box(modifier = Modifier.size(size.dp).clip(CircleShape).background(color))
+    }
+}
+
+@Composable
+private fun BreadcrumbNav(path: String, onNavigate: (String) -> Unit) {
+    val parts = path.split("/").filter { it.isNotEmpty() }
+    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+        TextButton(onClick = { onNavigate("/") }) { Text("root", fontSize = 12.sp) }
+        parts.forEachIndexed { index, part ->
+            Text("/", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+            TextButton(onClick = { onNavigate("/" + parts.take(index + 1).joinToString("/")) }) { Text(part, fontSize = 12.sp) }
         }
     }
 }
