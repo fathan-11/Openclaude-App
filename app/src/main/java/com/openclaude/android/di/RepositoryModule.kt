@@ -5,6 +5,7 @@ import com.openclaude.android.data.local.MessageDao
 import com.openclaude.android.data.remote.ApiService
 import com.openclaude.android.data.remote.FileApiService
 import com.openclaude.android.data.remote.StreamingClient
+import com.openclaude.android.data.network.NetworkConnectivityMonitor
 import com.openclaude.android.data.repository.ChatRepository
 import com.openclaude.android.data.repository.FileRepository
 import com.openclaude.android.data.repository.SettingsRepository
@@ -51,6 +52,7 @@ object RepositoryModule {
         apiService: ApiService,
         streamingClient: StreamingClient,
         settingsRepository: SettingsRepository,
+        networkMonitor: NetworkConnectivityMonitor,
     ): ChatRepository {
         return ChatRepository(
             conversationDao = conversationDao,
@@ -58,6 +60,7 @@ object RepositoryModule {
             apiService = apiService,
             streamingClient = streamingClient,
             settingsRepository = settingsRepository,
+            networkMonitor = networkMonitor,
         )
     }
 

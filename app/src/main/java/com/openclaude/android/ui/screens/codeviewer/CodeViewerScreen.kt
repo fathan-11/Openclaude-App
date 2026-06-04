@@ -4,13 +4,19 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -25,11 +31,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 fun CodeViewerScreen(
     filePath: String,
     onBack: () -> Unit,
-    onShare: ((String, String) -> Unit)? = null,
     viewModel: CodeViewerViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val clipboardManager = LocalClipboardManager.current
+    val context = LocalContext.current
 
     LaunchedEffect(filePath) {
         viewModel.loadFile(filePath)
@@ -37,156 +43,163 @@ fun CodeViewerScreen(
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        filePath.substringAfterLast("/"),
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = {
-                        if (uiState.isSearchActive) viewModel.toggleSearch()
-                        else onBack()
-                    }) {
-                        Icon(Icons.Default.ArrowBack, "Back")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { viewModel.toggleSearch() }) {
-                        Icon(
-                            Icons.Default.Search,
-                            "Find",
-                            tint = if (uiState.isSearchActive) MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.onSurface
+            Column {
+                CenterAlignedTopAppBar(
+                    title = { 
+                        Text(
+                            filePath.substringAfterLast("/"),
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
-                    }
-                    IconButton(onClick = { viewModel.decreaseFontSize() }) {
-                        Icon(Icons.Default.TextDecrease, "Decrease font")
-                    }
-                    IconButton(onClick = { viewModel.increaseFontSize() }) {
-                        Icon(Icons.Default.TextIncrease, "Increase font")
-                    }
-                    IconButton(onClick = {
-                        uiState.fileContent?.let {
-                            clipboardManager.setText(AnnotatedString(it.content))
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.Default.ArrowBack, "Back")
                         }
-                    }) {
-                        Icon(Icons.Default.ContentCopy, "Copy")
-                    }
-                    IconButton(onClick = {
-                        uiState.fileContent?.let { content ->
-                            onShare?.invoke(filePath, content.content)
+                    },
+                    actions = {
+                        // Search
+                        IconButton(onClick = { viewModel.toggleSearch() }) {
+                            Icon(
+                                Icons.Default.Search, 
+                                "Find in file",
+                                tint = if (uiState.isSearchVisible) MaterialTheme.colorScheme.primary 
+                                       else MaterialTheme.colorScheme.onSurface
+                            )
                         }
-                    }) {
-                        Icon(Icons.Default.Share, "Share")
+                        // Replace toggle
+                        IconButton(onClick = { viewModel.toggleReplace() }) {
+                            Icon(
+                                Icons.Default.FindReplace,
+                                "Replace",
+                                tint = if (uiState.isReplaceVisible) MaterialTheme.colorScheme.primary
+                                       else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        // Font size controls
+                        IconButton(onClick = { viewModel.decreaseFontSize() }) {
+                            Icon(Icons.Default.TextDecrease, "Decrease font")
+                        }
+                        IconButton(onClick = { viewModel.increaseFontSize() }) {
+                            Icon(Icons.Default.TextIncrease, "Increase font")
+                        }
+                        // Copy all
+                        IconButton(onClick = {
+                            uiState.fileContent?.let {
+                                clipboardManager.setText(AnnotatedString(it.content))
+                            }
+                        }) {
+                            Icon(Icons.Default.ContentCopy, "Copy")
+                        }
+                        // Share
+                        IconButton(onClick = {
+                            uiState.fileContent?.let { file ->
+                                val sendIntent = android.content.Intent().apply {
+                                    action = android.content.Intent.ACTION_SEND
+                                    putExtra(android.content.Intent.EXTRA_TEXT, file.content)
+                                    type = "text/plain"
+                                }
+                                val shareIntent = android.content.Intent.createChooser(sendIntent, null)
+                                context.startActivity(shareIntent)
+                            }
+                        }) {
+                            Icon(Icons.Default.Share, "Share")
+                        }
                     }
+                )
+                
+                // Search bar
+                AnimatedVisibility(
+                    visible = uiState.isSearchVisible,
+                    enter = fadeIn() + expandVertically(),
+                    exit = fadeOut() + shrinkVertically()
+                ) {
+                    SearchBar(
+                        query = uiState.searchQuery,
+                        matchCount = uiState.matchCount,
+                        currentMatchIndex = uiState.currentMatchIndex,
+                        onQueryChange = { viewModel.updateSearchQuery(it) },
+                        onNext = { viewModel.nextMatch() },
+                        onPrevious = { viewModel.previousMatch() },
+                        onClose = { viewModel.toggleSearch() }
+                    )
                 }
-            )
+                // Replace bar
+                AnimatedVisibility(
+                    visible = uiState.isReplaceVisible && uiState.isSearchVisible,
+                    enter = fadeIn() + expandVertically(),
+                    exit = fadeOut() + shrinkVertically()
+                ) {
+                    ReplaceBar(
+                        replaceQuery = uiState.replaceQuery,
+                        onReplaceQueryChange = { viewModel.updateReplaceQuery(it) },
+                        onReplace = { viewModel.replaceCurrent() },
+                        onReplaceAll = { viewModel.replaceAll() },
+                        hasMatches = uiState.matchCount > 0
+                    )
+                }
+            }
         }
     ) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            // Search bar
-            AnimatedVisibility(visible = uiState.isSearchActive) {
-                SearchBar(
-                    query = uiState.searchQuery,
-                    onQueryChange = { viewModel.updateSearchQuery(it) },
-                    matchCount = uiState.matchCount,
-                    currentMatch = uiState.currentMatchIndex,
-                    onNext = { viewModel.nextMatch() },
-                    onPrevious = { viewModel.previousMatch() },
-                    onClose = { viewModel.toggleSearch() }
-                )
+        when {
+            uiState.isLoading -> {
+                Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
             }
-
-            // File content
-            when {
-                uiState.isLoading -> {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
+            uiState.error != null -> {
+                Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(Icons.Default.Warning, null, Modifier.size(48.dp), tint = MaterialTheme.colorScheme.error)
+                        Spacer(Modifier.height(8.dp))
+                        Text(uiState.error!!, color = MaterialTheme.colorScheme.error)
                     }
                 }
-                uiState.error != null -> {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(Icons.Default.Warning, null, Modifier.size(48.dp), tint = MaterialTheme.colorScheme.error)
-                            Spacer(Modifier.height(8.dp))
-                            Text(uiState.error!!, color = MaterialTheme.colorScheme.error)
-                        }
-                    }
-                }
-                uiState.fileContent != null -> {
-                    val hScrollState = rememberScrollState()
-                    val vScrollState = rememberScrollState()
-
-                    Row(modifier = Modifier.fillMaxSize()) {
-                        // Line numbers
-                        if (uiState.showLineNumbers) {
-                            Column(
-                                modifier = Modifier
-                                    .width(48.dp)
-                                    .verticalScroll(vScrollState)
-                                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
-                                    .padding(vertical = 8.dp)
-                            ) {
-                                val lineCount = uiState.fileContent!!.lineCount
-                                val currentMatchLine = if (uiState.currentMatchIndex >= 0 && uiState.searchResults.isNotEmpty())
-                                    uiState.searchResults[uiState.currentMatchIndex].lineNumber else -1
-
-                                for (i in 1..lineCount) {
-                                    val isHighlighted = i == currentMatchLine
-                                    Text(
-                                        "$i",
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .background(
-                                                if (isHighlighted) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                                                else MaterialTheme.colorScheme.surface
-                                            )
-                                            .padding(horizontal = 4.dp),
-                                        textAlign = TextAlign.End,
-                                        fontFamily = FontFamily.Monospace,
-                                        fontSize = uiState.fontSize.sp * 0.85f,
-                                        color = if (isHighlighted) MaterialTheme.colorScheme.primary
-                                        else MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        }
-
-                        // Code content
-                        Box(
+            }
+            uiState.fileContent != null -> {
+                val hScrollState = rememberScrollState()
+                val vScrollState = rememberScrollState()
+                
+                Row(modifier = Modifier.fillMaxSize().padding(padding)) {
+                    // Line numbers
+                    if (uiState.showLineNumbers) {
+                        Column(
                             modifier = Modifier
-                                .weight(1f)
-                                .horizontalScroll(hScrollState)
+                                .width(48.dp)
                                 .verticalScroll(vScrollState)
-                                .background(MaterialTheme.colorScheme.surface)
-                                .padding(8.dp)
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+                                .padding(vertical = 8.dp)
                         ) {
-                            if (uiState.highlightedCode != null) {
+                            val lineCount = uiState.fileContent!!.lineCount
+                            for (i in 1..lineCount) {
                                 Text(
-                                    text = uiState.highlightedCode!!,
+                                    "$i",
+                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                                    textAlign = TextAlign.End,
                                     fontFamily = FontFamily.Monospace,
-                                    fontSize = uiState.fontSize.sp,
-                                    lineHeight = (uiState.fontSize * 1.5f).sp
+                                    fontSize = uiState.fontSize.sp * 0.85f,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
                     }
-
-                    // Current match indicator
-                    if (uiState.searchResults.isNotEmpty()) {
-                        Surface(
-                            modifier = Modifier.fillMaxWidth(),
-                            color = MaterialTheme.colorScheme.surfaceVariant
-                        ) {
+                    
+                    // Code content
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .horizontalScroll(hScrollState)
+                            .verticalScroll(vScrollState)
+                            .background(MaterialTheme.colorScheme.surface)
+                            .padding(8.dp)
+                    ) {
+                        if (uiState.highlightedCode != null) {
                             Text(
-                                "Match ${uiState.currentMatchIndex + 1} of ${uiState.matchCount}",
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                text = uiState.highlightedCode!!,
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = uiState.fontSize.sp,
+                                lineHeight = (uiState.fontSize * 1.5f).sp
                             )
                         }
                     }
@@ -199,61 +212,150 @@ fun CodeViewerScreen(
 @Composable
 private fun SearchBar(
     query: String,
-    onQueryChange: (String) -> Unit,
     matchCount: Int,
-    currentMatch: Int,
+    currentMatchIndex: Int,
+    onQueryChange: (String) -> Unit,
     onNext: () -> Unit,
     onPrevious: () -> Unit,
-    onClose: () -> Unit
+    onClose: () -> Unit,
 ) {
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
+
     Surface(
-        modifier = Modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.surfaceVariant,
-        tonalElevation = 2.dp
+        modifier = Modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 4.dp),
+                .padding(horizontal = 8.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            OutlinedTextField(
+            // Search input
+            Icon(
+                Icons.Default.Search,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(Modifier.width(8.dp))
+            
+            BasicTextField(
                 value = query,
                 onValueChange = onQueryChange,
-                modifier = Modifier.weight(1f),
-                placeholder = { Text("Find in file...") },
+                modifier = Modifier
+                    .weight(1f)
+                    .focusRequester(focusRequester),
                 singleLine = true,
-                leadingIcon = { Icon(Icons.Default.Search, null) },
-                trailingIcon = {
-                    if (query.isNotEmpty()) {
-                        IconButton(onClick = { onQueryChange("") }) {
-                            Icon(Icons.Default.Clear, "Clear")
+                textStyle = MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurface
+                ),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                decorationBox = { innerTextField ->
+                    Box {
+                        if (query.isEmpty()) {
+                            Text(
+                                "Find in file...",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                            )
                         }
+                        innerTextField()
                     }
-                },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface
-                )
+                }
             )
-
-            if (matchCount > 0) {
+            
+            // Match count
+            if (query.isNotEmpty()) {
                 Text(
-                    "${currentMatch + 1}/$matchCount",
-                    modifier = Modifier.padding(horizontal = 8.dp),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = if (matchCount > 0) "${currentMatchIndex + 1}/$matchCount" else "No results",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 8.dp)
                 )
             }
+            
+            // Navigation buttons
+            IconButton(
+                onClick = onPrevious,
+                enabled = matchCount > 0,
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(Icons.Default.KeyboardArrowUp, "Previous", modifier = Modifier.size(18.dp))
+            }
+            IconButton(
+                onClick = onNext,
+                enabled = matchCount > 0,
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(Icons.Default.KeyboardArrowDown, "Next", modifier = Modifier.size(18.dp))
+            }
+            
+            // Close
+            IconButton(onClick = onClose, modifier = Modifier.size(32.dp)) {
+                Icon(Icons.Default.Close, "Close search", modifier = Modifier.size(18.dp))
+            }
+        }
+    }
+}
 
-            IconButton(onClick = onPrevious, enabled = matchCount > 0) {
-                Icon(Icons.Default.KeyboardArrowUp, "Previous")
+@Composable
+private fun ReplaceBar(
+    replaceQuery: String,
+    onReplaceQueryChange: (String) -> Unit,
+    onReplace: () -> Unit,
+    onReplaceAll: () -> Unit,
+    hasMatches: Boolean,
+) {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                Icons.Default.FindReplace,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(Modifier.width(8.dp))
+            BasicTextField(
+                value = replaceQuery,
+                onValueChange = onReplaceQueryChange,
+                modifier = Modifier.weight(1f),
+                singleLine = true,
+                textStyle = MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurface
+                ),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                decorationBox = { innerTextField ->
+                    Box {
+                        if (replaceQuery.isEmpty()) {
+                            Text(
+                                "Replace...",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                            )
+                        }
+                        innerTextField()
+                    }
+                }
+            )
+            Spacer(Modifier.width(8.dp))
+            TextButton(onClick = onReplace, enabled = hasMatches) {
+                Text("Replace", style = MaterialTheme.typography.bodySmall)
             }
-            IconButton(onClick = onNext, enabled = matchCount > 0) {
-                Icon(Icons.Default.KeyboardArrowDown, "Next")
-            }
-            IconButton(onClick = onClose) {
-                Icon(Icons.Default.Close, "Close search")
+            TextButton(onClick = onReplaceAll, enabled = hasMatches) {
+                Text("All", style = MaterialTheme.typography.bodySmall)
             }
         }
     }

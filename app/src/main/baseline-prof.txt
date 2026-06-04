@@ -1,0 +1,10 @@
+# Baseline profile for OpenClaude Android
+# These rules hint the ART compiler to AOT-compile critical startup paths
+
+HSPLandroidx/compose/runtime/**;->**(**)**
+HSPLandroidx/compose/ui/**;->**(**)**
+HSPLandroidx/compose/foundation/**;->**(**)**
+HSPLandroidx/compose/material3/**;->**(**)**
+HSPLandroidx/lifecycle/**;->**(**)**
+HSPLandroidx/navigation/**;->**(**)**
+HSPLcom/openclaude/android/**;->**(**)**

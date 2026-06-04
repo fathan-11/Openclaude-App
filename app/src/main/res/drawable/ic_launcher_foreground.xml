@@ -4,10 +4,41 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+    <!-- Background circle -->
     <path
-        android:fillColor="#1976D2"
+        android:fillColor="#1A1A2E"
         android:pathData="M0,0h108v108H0z"/>
+    <!-- Accent ring -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#6C63FF"
+        android:strokeWidth="3"
+        android:pathData="M54,20 A34,34 0 1,1 53.99,20"/>
+    <!-- AI brain symbol - outer -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M54,30 L54,54 L72,54 A18,18 0 1,1 54,36 L45,45 A6,6 0 1,0 54,54 L54,30Z"/>
+        android:pathData="M54,32 C46,32 40,38 40,46 C40,50 42,54 45,56 L45,62 C45,63.1 45.9,64 47,64 L61,64 C62.1,64 63,63.1 63,62 L63,56 C66,54 68,50 68,46 C68,38 62,32 54,32Z"/>
+    <!-- Neural nodes -->
+    <path
+        android:fillColor="#6C63FF"
+        android:pathData="M48,44 A3,3 0 1,1 47.99,44"/>
+    <path
+        android:fillColor="#6C63FF"
+        android:pathData="M60,44 A3,3 0 1,1 59.99,44"/>
+    <!-- Connection line -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#6C63FF"
+        android:strokeWidth="2"
+        android:pathData="M51,44 L57,44"/>
+    <!-- Pulse wave -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#6C63FF"
+        android:strokeWidth="2"
+        android:pathData="M46,50 Q50,47 54,52 Q58,57 62,50"/>
+    <!-- Bottom accent -->
+    <path
+        android:fillColor="#6C63FF"
+        android:pathData="M48,70 L60,70 L58,74 L50,74 Z"/>
 </vector>

@@ -6,6 +6,7 @@ import com.openclaude.android.data.model.ChatMessage
 import com.openclaude.android.data.model.Conversation
 import com.openclaude.android.data.model.Model
 import com.openclaude.android.data.model.Provider
+import com.openclaude.android.data.remote.ApiError
 import com.openclaude.android.data.remote.ApiService
 import com.openclaude.android.data.remote.StreamEvent
 import com.openclaude.android.data.remote.StreamingClient
@@ -23,6 +24,7 @@ class ChatRepository @Inject constructor(
     private val apiService: ApiService,
     private val streamingClient: StreamingClient,
     private val settingsRepository: SettingsRepository,
+    private val networkMonitor: NetworkConnectivityMonitor,
 ) {
     fun getConversations(): Flow<List<Conversation>> = conversationDao.getAllConversations()
 
@@ -85,61 +87,73 @@ class ChatRepository @Inject constructor(
         provider: Provider,
         model: Model,
     ): Flow<StreamEvent> = flow {
-        val apiKey = settingsRepository.getApiKey(provider)
-            ?: throw IllegalStateException("API key not set for ${provider.displayName}")
+        try {
+            val apiKey = settingsRepository.getApiKey(provider)
+                ?: throw ApiError.AuthError("API key not set for ${provider.displayName}")
 
-        val messages = messageDao.getMessagesByConversationSync(conversationId)
-        val messageDtos = messages.map { msg ->
-            MessageDto(role = msg.role, content = msg.content)
-        }
+            val messages = messageDao.getMessagesByConversationSync(conversationId)
+            val messageDtos = messages.map { msg ->
+                MessageDto(role = msg.role, content = msg.content)
+            }
 
-        val tempMessageId = UUID.randomUUID().toString()
-        var fullContent = ""
+            val tempMessageId = UUID.randomUUID().toString()
+            var fullContent = ""
 
-        // Emit initial streaming message
-        val tempMessage = ChatMessage(
-            id = tempMessageId,
-            conversationId = conversationId,
-            role = "assistant",
-            content = "",
-            isStreaming = true,
-        )
-        messageDao.insertMessage(tempMessage)
+            // Emit initial streaming message
+            val tempMessage = ChatMessage(
+                id = tempMessageId,
+                conversationId = conversationId,
+                role = "assistant",
+                content = "",
+                isStreaming = true,
+            )
+            messageDao.insertMessage(tempMessage)
 
-        streamingClient.streamChatCompletion(
-            baseUrl = settingsRepository.getBaseUrl(provider),
-            apiKey = apiKey,
-            model = model.id,
-            messages = messageDtos,
-            temperature = 0.7,
-            maxTokens = model.maxTokens,
-        ).collect { event ->
-            when (event) {
-                is StreamEvent.Content -> {
-                    fullContent += event.text
-                    messageDao.updateMessage(tempMessage.copy(content = fullContent))
-                    emit(StreamEvent.Content(event.text))
-                }
-                is StreamEvent.Done -> {
-                    messageDao.updateMessage(
-                        tempMessage.copy(
-                            content = fullContent,
-                            isStreaming = false
+            streamingClient.streamChatCompletion(
+                baseUrl = settingsRepository.getBaseUrl(provider),
+                apiKey = apiKey,
+                model = model.id,
+                messages = messageDtos,
+                temperature = 0.7,
+                maxTokens = model.maxTokens,
+            ).collect { event ->
+                when (event) {
+                    is StreamEvent.Content -> {
+                        if (event.text.isEmpty()) return@collect
+                        
+                        fullContent += event.text
+                        messageDao.updateMessage(tempMessage.copy(content = fullContent))
+                        emit(StreamEvent.Content(event.text))
+                    }
+                    is StreamEvent.Done -> {
+                        messageDao.updateMessage(
+                            tempMessage.copy(
+                                content = fullContent,
+                                isStreaming = false
+                            )
                         )
-                    )
-                    conversationDao.updateConversationTimestamp(conversationId)
-                    emit(StreamEvent.Done)
-                }
-                is StreamEvent.Error -> {
-                    messageDao.updateMessage(
-                        tempMessage.copy(
-                            content = if (fullContent.isEmpty()) "Error: ${event.message}" else fullContent,
-                            isStreaming = false
+                        conversationDao.updateConversationTimestamp(conversationId)
+                        emit(StreamEvent.Done)
+                    }
+                    is StreamEvent.Error -> {
+                        messageDao.updateMessage(
+                            tempMessage.copy(
+                                content = if (fullContent.isEmpty()) "Error: ${event.message}" else fullContent,
+                                isStreaming = false
+                            )
                         )
-                    )
-                    emit(event)
+                        emit(event)
+                    }
                 }
             }
+        } catch (e: ApiError) {
+            emit(StreamEvent.Error(e.userMessage))
+        } catch (e: IllegalStateException) {
+            val apiError = ApiError.UnknownError(e.message ?: "Unknown error")
+            emit(StreamEvent.Error(apiError.userMessage))
+        } catch (e: Exception) {
+            val apiError = ApiError.fromException(e)
+            emit(StreamEvent.Error(apiError.userMessage))
         }
     }
 
@@ -151,13 +165,28 @@ class ChatRepository @Inject constructor(
 
     suspend fun getAvailableModels(provider: Provider): List<String> {
         return try {
+            if (!networkMonitor.isConnected()) {
+                return Model.defaultModels(provider).map { it.id }
+            }
             val apiKey = settingsRepository.getApiKey(provider) ?: return emptyList()
             streamingClient.getModels(
                 baseUrl = settingsRepository.getBaseUrl(provider),
                 apiKey = apiKey
             )
+        } catch (e: ApiError) {
+            Model.defaultModels(provider).map { it.id }
         } catch (e: Exception) {
             Model.defaultModels(provider).map { it.id }
+        }
+    }
+
+    /**
+     * Maps an exception to an ApiError for consistent error handling.
+     */
+    fun mapExceptionToApiError(e: Exception): ApiError {
+        return when (e) {
+            is ApiError -> e
+            else -> ApiError.fromException(e)
         }
     }
 }
