@@ -12,13 +12,16 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class TerminalUiState(
-    val session: TerminalSession? = null,
+    val sessions: List<TerminalSession> = emptyList(),
+    val activeSessionIndex: Int = 0,
     val inputText: String = "",
     val commandHistory: List<String> = emptyList(),
     val historyIndex: Int = -1,
     val isRunning: Boolean = false,
     val error: String? = null
-)
+) {
+    val activeSession: TerminalSession? get() = sessions.getOrNull(activeSessionIndex)
+}
 
 @HiltViewModel
 class TerminalViewModel @Inject constructor(
@@ -31,9 +34,16 @@ class TerminalViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            terminalRepository.activeSession.collect { session ->
-                _uiState.update { it.copy(session = session) }
+            terminalRepository.sessions.collect { sessions ->
+                if (sessions.isNotEmpty()) {
+                    _uiState.update { it.copy(sessions = sessions) }
+                }
             }
+        }
+        // Create initial session
+        viewModelScope.launch {
+            val session = terminalRepository.createSession("Terminal 1")
+            _uiState.update { it.copy(sessions = listOf(session), activeSessionIndex = 0) }
         }
     }
 
@@ -42,24 +52,22 @@ class TerminalViewModel @Inject constructor(
     }
 
     fun executeCommand() {
+        val session = _uiState.value.activeSession ?: return
         val command = _uiState.value.inputText.trim()
         if (command.isEmpty()) return
 
         viewModelScope.launch {
             _uiState.update { it.copy(isRunning = true, error = null, inputText = "") }
-
-            // Add to history
             val history = (_uiState.value.commandHistory + command).distinct().takeLast(100)
             _uiState.update { it.copy(commandHistory = history, historyIndex = -1) }
 
             runCommandUseCase(command)
                 .onSuccess { cmd ->
-                    // Poll for output
                     while (true) {
                         delay(100)
                         runCommandUseCase.getOutput(cmd.id)
-                        val session = terminalRepository.activeSession.value
-                        if (session?.currentCommand?.status != CommandStatus.RUNNING) break
+                        val currentSession = terminalRepository.activeSession.value
+                        if (currentSession?.currentCommand?.status != CommandStatus.RUNNING) break
                     }
                     _uiState.update { it.copy(isRunning = false) }
                 }
@@ -70,7 +78,7 @@ class TerminalViewModel @Inject constructor(
     }
 
     fun killCurrentCommand() {
-        val cmdId = _uiState.value.session?.currentCommand?.id ?: return
+        val cmdId = _uiState.value.activeSession?.currentCommand?.id ?: return
         viewModelScope.launch {
             runCommandUseCase.kill(cmdId)
         }
@@ -79,22 +87,71 @@ class TerminalViewModel @Inject constructor(
     fun navigateHistoryUp() {
         val history = _uiState.value.commandHistory
         if (history.isEmpty()) return
-        val newIndex = (_uiState.value.historyIndex + 1).coerceAtMost(history.size - 1)
-        _uiState.update { it.copy(historyIndex = newIndex, inputText = history[history.size - 1 - newIndex]) }
-    }
-
-    fun navigateHistoryDown() {
-        val history = _uiState.value.commandHistory
-        val newIndex = (_uiState.value.historyIndex - 1).coerceAtLeast(-1)
+        val newIndex = if (_uiState.value.historyIndex < history.size - 1) {
+            _uiState.value.historyIndex + 1
+        } else _uiState.value.historyIndex
         _uiState.update {
             it.copy(
                 historyIndex = newIndex,
-                inputText = if (newIndex == -1) "" else history[history.size - 1 - newIndex]
+                inputText = history[history.size - 1 - newIndex]
             )
         }
     }
 
+    fun navigateHistoryDown() {
+        val history = _uiState.value.commandHistory
+        if (_uiState.value.historyIndex <= 0) {
+            _uiState.update { it.copy(historyIndex = -1, inputText = "") }
+            return
+        }
+        val newIndex = _uiState.value.historyIndex - 1
+        _uiState.update {
+            it.copy(
+                historyIndex = newIndex,
+                inputText = history[history.size - 1 - newIndex]
+            )
+        }
+    }
+
+    // Tab management
+    fun createNewTab() {
+        viewModelScope.launch {
+            val tabNumber = _uiState.value.sessions.size + 1
+            val session = terminalRepository.createSession("Terminal $tabNumber")
+            _uiState.update {
+                it.copy(
+                    sessions = it.sessions + session,
+                    activeSessionIndex = it.sessions.size
+                )
+            }
+        }
+    }
+
+    fun switchTab(index: Int) {
+        if (index in _uiState.value.sessions.indices) {
+            _uiState.update { it.copy(activeSessionIndex = index) }
+            terminalRepository.setActiveSession(_uiState.value.sessions[index].id)
+        }
+    }
+
+    fun closeTab(index: Int) {
+        val sessions = _uiState.value.sessions.toMutableList()
+        if (sessions.size <= 1) return // Keep at least one tab
+
+        viewModelScope.launch {
+            terminalRepository.deleteSession(sessions[index].id)
+            sessions.removeAt(index)
+            val newIndex = _uiState.value.activeSessionIndex.coerceIn(0, sessions.size - 1)
+            _uiState.update {
+                it.copy(sessions = sessions, activeSessionIndex = newIndex)
+            }
+        }
+    }
+
     fun clearTerminal() {
-        terminalRepository.clearSession()
+        val session = _uiState.value.activeSession ?: return
+        viewModelScope.launch {
+            terminalRepository.clearSession(session.id)
+        }
     }
 }
