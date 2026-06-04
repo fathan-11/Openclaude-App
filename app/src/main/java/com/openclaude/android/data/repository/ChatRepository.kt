@@ -6,6 +6,7 @@ import com.openclaude.android.data.model.ChatMessage
 import com.openclaude.android.data.model.Conversation
 import com.openclaude.android.data.model.Model
 import com.openclaude.android.data.model.Provider
+import com.openclaude.android.data.network.NetworkConnectivityMonitor
 import com.openclaude.android.data.remote.ApiError
 import com.openclaude.android.data.remote.ApiService
 import com.openclaude.android.data.remote.StreamEvent
