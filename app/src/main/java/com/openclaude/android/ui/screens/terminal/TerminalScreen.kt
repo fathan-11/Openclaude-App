@@ -1,6 +1,7 @@
 package com.openclaude.android.ui.screens.terminal
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -12,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -29,8 +31,8 @@ fun TerminalScreen(
     val uiState by viewModel.uiState.collectAsState()
     val listState = rememberLazyListState()
 
-    LaunchedEffect(uiState.session?.history?.size) {
-        uiState.session?.history?.size?.let {
+    LaunchedEffect(uiState.activeSession?.history?.size) {
+        uiState.activeSession?.history?.size?.let {
             if (it > 0) listState.animateScrollToItem(it - 1)
         }
     }
@@ -45,6 +47,9 @@ fun TerminalScreen(
                             Icon(Icons.Default.Stop, "Kill", tint = MaterialTheme.colorScheme.error)
                         }
                     }
+                    IconButton(onClick = { viewModel.createNewTab() }) {
+                        Icon(Icons.Default.Add, "New Tab")
+                    }
                     IconButton(onClick = { viewModel.clearTerminal() }) {
                         Icon(Icons.Default.Delete, "Clear")
                     }
@@ -53,6 +58,36 @@ fun TerminalScreen(
         }
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+            // Tab bar
+            if (uiState.sessions.size > 1) {
+                TabRow(
+                    selectedTabIndex = uiState.activeSessionIndex,
+                    modifier = Modifier.fillMaxWidth(),
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                ) {
+                    uiState.sessions.forEachIndexed { index, session ->
+                        Tab(
+                            selected = index == uiState.activeSessionIndex,
+                            onClick = { viewModel.switchTab(index) },
+                            text = {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(session.name, fontSize = 12.sp)
+                                    if (uiState.sessions.size > 1) {
+                                        Spacer(Modifier.width(4.dp))
+                                        IconButton(
+                                            onClick = { viewModel.closeTab(index) },
+                                            modifier = Modifier.size(16.dp)
+                                        ) {
+                                            Icon(Icons.Default.Close, "Close", modifier = Modifier.size(12.dp))
+                                        }
+                                    }
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+
             // Terminal output
             LazyColumn(
                 state = listState,
@@ -62,7 +97,7 @@ fun TerminalScreen(
                     .background(Color(0xFF0D1117))
                     .padding(8.dp)
             ) {
-                items(uiState.session?.history ?: emptyList()) { line ->
+                items(uiState.activeSession?.history ?: emptyList()) { line ->
                     TerminalLineView(line)
                 }
                 if (uiState.isRunning) {
@@ -99,27 +134,41 @@ fun TerminalScreen(
                         cursorColor = Color(0xFF50FA7B)
                     ),
                     singleLine = true,
-                    shape = RoundedCornerShape(8.dp)
+                    textStyle = LocalTextStyle.current.copy(fontFamily = FontFamily.Monospace, fontSize = 14.sp)
                 )
                 Spacer(Modifier.width(8.dp))
                 IconButton(
                     onClick = { viewModel.executeCommand() },
                     enabled = uiState.inputText.isNotBlank() && !uiState.isRunning
                 ) {
-                    Icon(Icons.Default.Send, "Run", tint = Color(0xFF50FA7B))
+                    Icon(
+                        Icons.Default.Send,
+                        "Send",
+                        tint = if (uiState.inputText.isNotBlank()) Color(0xFF50FA7B) else Color(0xFF6272A4)
+                    )
                 }
             }
 
-            // Error
+            // Error display
             uiState.error?.let { error ->
-                Text(error, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(8.dp))
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = MaterialTheme.colorScheme.errorContainer
+                ) {
+                    Text(
+                        error,
+                        modifier = Modifier.padding(8.dp),
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        fontSize = 12.sp
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-private fun TerminalLineView(line: TerminalLine) {
+fun TerminalLineView(line: TerminalLine) {
     val color = when (line.type) {
         TerminalLineType.INPUT -> Color(0xFF50FA7B)
         TerminalLineType.OUTPUT -> Color(0xFFF8F8F2)
@@ -133,6 +182,6 @@ private fun TerminalLineView(line: TerminalLine) {
         color = color,
         fontFamily = FontFamily.Monospace,
         fontSize = 13.sp,
-        lineHeight = 18.sp
+        modifier = Modifier.padding(vertical = 1.dp)
     )
 }

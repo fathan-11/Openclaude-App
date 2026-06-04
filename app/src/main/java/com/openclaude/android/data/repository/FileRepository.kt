@@ -1,8 +1,7 @@
 package com.openclaude.android.data.repository
 
 import com.openclaude.android.data.model.*
-import com.openclaude.android.data.remote.FileApiService
-import com.openclaude.android.data.remote.FileContent
+import com.openclaude.android.data.remote.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,7 +14,7 @@ class FileRepository @Inject constructor(
 ) {
     private val _fileTree = MutableStateFlow<List<FileNode>>(emptyList())
     val fileTree: Flow<List<FileNode>> = _fileTree.asStateFlow()
-    
+
     private val _currentPath = MutableStateFlow("/")
     val currentPath: Flow<String> = _currentPath.asStateFlow()
 
@@ -55,6 +54,51 @@ class FileRepository @Inject constructor(
         return try {
             val diff = fileApiService.getDiff(file)
             Result.success(diff)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun createFile(path: String, content: String = ""): Result<FileOperationResult> {
+        return try {
+            val result = fileApiService.createFile(CreateFileRequest(path, content))
+            Result.success(result)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun writeFile(path: String, content: String): Result<FileOperationResult> {
+        return try {
+            val result = fileApiService.writeFile(WriteFileRequest(path, content))
+            Result.success(result)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun deleteFile(path: String): Result<FileOperationResult> {
+        return try {
+            val result = fileApiService.deleteFile(path)
+            Result.success(result)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun createDirectory(path: String): Result<FileOperationResult> {
+        return try {
+            val result = fileApiService.createDirectory(CreateDirRequest(path))
+            Result.success(result)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun renameFile(oldPath: String, newPath: String): Result<FileOperationResult> {
+        return try {
+            val result = fileApiService.renameFile(RenameFileRequest(oldPath, newPath))
+            Result.success(result)
         } catch (e: Exception) {
             Result.failure(e)
         }
