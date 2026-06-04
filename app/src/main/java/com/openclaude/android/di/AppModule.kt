@@ -3,6 +3,7 @@ package com.openclaude.android.di
 import android.content.Context
 import com.openclaude.android.data.remote.ApiService
 import com.openclaude.android.data.remote.FileApiService
+import com.openclaude.android.data.remote.GitApiService
 import com.openclaude.android.data.remote.McpApiService
 import com.openclaude.android.data.remote.TerminalApiService
 import com.openclaude.android.data.remote.ToolApiService
@@ -93,6 +94,12 @@ object AppModule {
     @Singleton
     fun provideGitHubApiService(retrofit: Retrofit): GitHubApiService {
         return retrofit.create(GitHubApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideGitApiService(retrofit: Retrofit): GitApiService {
+        return retrofit.create(GitApiService::class.java)
     }
 
     @Provides

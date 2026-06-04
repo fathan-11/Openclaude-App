@@ -1,16 +1,20 @@
 package com.openclaude.android.ui.screens.files
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -18,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.openclaude.android.data.model.FileNode
+import com.openclaude.android.data.model.GitStatus
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,6 +31,10 @@ fun FileBrowserScreen(
     viewModel: FileBrowserViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.refreshGitStatus()
+    }
 
     Scaffold(
         topBar = {
@@ -39,6 +48,23 @@ fun FileBrowserScreen(
                     }
                 },
                 actions = {
+                    if (uiState.isGitRepo) {
+                        // Git status badge
+                        val modifiedCount = uiState.gitStatus.values.count {
+                            it in listOf(GitStatus.MODIFIED, GitStatus.MODIFIED_STAGED)
+                        }
+                        val untrackedCount = uiState.gitStatus.values.count {
+                            it == GitStatus.UNTRACKED
+                        }
+                        if (modifiedCount > 0 || untrackedCount > 0) {
+                            Badge(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
+                            ) {
+                                Text("${modifiedCount + untrackedCount}")
+                            }
+                        }
+                    }
                     IconButton(onClick = { viewModel.refresh() }) {
                         Icon(Icons.Default.Refresh, "Refresh")
                     }
@@ -49,7 +75,17 @@ fun FileBrowserScreen(
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
             // Breadcrumb
             BreadcrumbNav(path = uiState.currentPath, onNavigate = { viewModel.loadFiles(it) })
-            
+
+            // Git status legend (when in git repo)
+            if (uiState.isGitRepo && uiState.gitStatus.isNotEmpty()) {
+                GitStatusLegend(
+                    gitStatus = uiState.gitStatus,
+                    onStatusClick = { status ->
+                        viewModel.toggleGitStatusFilter(status)
+                    }
+                )
+            }
+
             when {
                 uiState.isLoading -> {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -90,9 +126,81 @@ fun FileBrowserScreen(
 }
 
 @Composable
+private fun GitStatusLegend(
+    gitStatus: Map<String, GitStatus>,
+    onStatusClick: (GitStatus) -> Unit
+) {
+    val statusCounts = gitStatus.values.groupingBy { it }.eachCount()
+    if (statusCounts.isEmpty()) return
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            "Git:",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontWeight = FontWeight.Bold
+        )
+
+        statusCounts.filter { it.key != GitStatus.CLEAN }.forEach { (status, count) ->
+            Surface(
+                onClick = { onStatusClick(status) },
+                shape = MaterialTheme.shapes.small,
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
+                modifier = Modifier
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    GitStatusIndicator(status, size = 8)
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        "${status.symbol}$count",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontSize = 10.sp
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun GitStatusIndicator(
+    status: GitStatus?,
+    size: Int = 12
+) {
+    val color = when (status) {
+        GitStatus.MODIFIED, GitStatus.MODIFIED_STAGED -> Color(0xFFFFC107) // Amber
+        GitStatus.ADDED, GitStatus.ADDED_STAGED -> Color(0xFF4CAF50) // Green
+        GitStatus.DELETED, GitStatus.DELETED_STAGED -> Color(0xFFF44336) // Red
+        GitStatus.UNTRACKED -> Color(0xFF9E9E9E) // Gray
+        GitStatus.CONFLICT -> Color(0xFFE91E63) // Pink
+        GitStatus.RENAMED, GitStatus.COPIED -> Color(0xFF2196F3) // Blue
+        GitStatus.CLEAN -> Color(0xFF4CAF50) // Green
+        GitStatus.NONE, null -> Color.Transparent
+    }
+
+    if (status != null && status != GitStatus.NONE) {
+        Box(
+            modifier = Modifier
+                .size(size.dp)
+                .clip(CircleShape)
+                .background(color)
+        )
+    }
+}
+
+@Composable
 private fun BreadcrumbNav(path: String, onNavigate: (String) -> Unit) {
     val parts = path.split("/").filter { it.isNotEmpty() }
-    
+
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -102,7 +210,7 @@ private fun BreadcrumbNav(path: String, onNavigate: (String) -> Unit) {
         }
         parts.forEachIndexed { index, part ->
             Text("/", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
-            TextButton(onClick = { 
+            TextButton(onClick = {
                 val subPath = "/" + parts.take(index + 1).joinToString("/")
                 onNavigate(subPath)
             }) {
@@ -125,6 +233,12 @@ private fun FileTreeItem(file: FileNode, onClick: () -> Unit) {
             modifier = Modifier.padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Git status indicator (left of icon)
+            if (file.gitStatus != null && file.gitStatus != GitStatus.NONE) {
+                GitStatusIndicator(file.gitStatus)
+                Spacer(Modifier.width(8.dp))
+            }
+
             Text(file.icon, fontSize = 20.sp)
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
@@ -136,11 +250,29 @@ private fun FileTreeItem(file: FileNode, onClick: () -> Unit) {
                     overflow = TextOverflow.Ellipsis
                 )
                 if (!file.isDirectory) {
-                    Text(
-                        "${file.extension.uppercase()} • ${formatSize(file.size)}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            "${file.extension.uppercase()} • ${formatSize(file.size)}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        if (file.gitStatus != null && file.gitStatus != GitStatus.NONE && file.gitStatus != GitStatus.CLEAN) {
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                file.gitStatus.symbol,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = when (file.gitStatus) {
+                                    GitStatus.MODIFIED, GitStatus.MODIFIED_STAGED -> Color(0xFFFFC107)
+                                    GitStatus.ADDED, GitStatus.ADDED_STAGED -> Color(0xFF4CAF50)
+                                    GitStatus.DELETED, GitStatus.DELETED_STAGED -> Color(0xFFF44336)
+                                    GitStatus.UNTRACKED -> Color(0xFF9E9E9E)
+                                    GitStatus.CONFLICT -> Color(0xFFE91E63)
+                                    else -> MaterialTheme.colorScheme.onSurfaceVariant
+                                },
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
                 }
             }
             if (file.isDirectory) {
