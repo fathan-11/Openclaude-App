@@ -158,9 +158,10 @@ fun NavGraph() {
                 arguments = listOf(navArgument("file") { type = NavType.StringType })
             ) { backStackEntry ->
                 val file = backStackEntry.arguments?.getString("file") ?: ""
-                // DiffViewerScreen requires a DiffResult - this would need to be loaded via ViewModel
-                // For now, placeholder that navigates back
-                // In a full implementation, use a DiffViewerViewModel to load the diff
+                // Navigate back - DiffViewerScreen requires DiffResult from ViewModel
+                LaunchedEffect(Unit) {
+                    navController.popBackStack()
+                }
             }
             // GitHub Integration routes
             composable(Routes.REPOS) {
