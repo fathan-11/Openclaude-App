@@ -19,6 +19,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.openclaude.android.data.model.Conversation
+import com.openclaude.android.domain.model.ConversationUiModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -93,7 +94,7 @@ fun ConversationListScreen(
 
 @Composable
 private fun ConversationCard(
-    conversation: Conversation,
+    conversation: ConversationUiModel,
     onClick: () -> Unit,
     onDelete: () -> Unit
 ) {
