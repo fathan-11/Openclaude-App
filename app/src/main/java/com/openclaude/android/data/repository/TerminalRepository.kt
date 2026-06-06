@@ -103,6 +103,4 @@ class TerminalRepository @Inject constructor(
             }
         }
     }
-        _activeSession.value = _activeSession.value?.copy(history = emptyList())
-    }
 }

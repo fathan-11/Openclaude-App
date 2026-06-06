@@ -120,7 +120,7 @@ private fun ConversationCard(
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = "${conversation.messageCount} messages \u2022 ${conversation.model}"
+                    text = "${conversation.messageCount} messages \u2022 ${conversation.model}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
