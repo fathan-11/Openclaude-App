@@ -8,6 +8,7 @@ import com.openclaude.android.data.network.NetworkConnectivityMonitor
 import com.openclaude.android.data.network.NetworkState
 import com.openclaude.android.data.remote.ApiError
 import com.openclaude.android.data.remote.StreamEvent
+import kotlinx.coroutines.flow.first
 import com.openclaude.android.data.repository.ChatRepository
 import com.openclaude.android.data.repository.SettingsRepository
 import com.openclaude.android.domain.model.ChatUiState
@@ -43,14 +44,18 @@ class ChatViewModel @Inject constructor(
     private val maxRetries = 3
 
     fun initialize(conversationId: String?) {
-        val provider = settingsRepository.getSelectedProvider()
-        val model = settingsRepository.getSelectedModel()
+        viewModelScope.launch {
+            val provider = settingsRepository.selectedProvider.first()
+            val modelId = settingsRepository.selectedModel.first()
+            val model = Model.defaultModels(provider).find { it.id == modelId }
+                ?: Model.defaultModels(provider).first()
 
-        _uiState.update {
-            it.copy(
-                currentProvider = provider,
-                currentModel = model,
-            )
+            _uiState.update {
+                it.copy(
+                    currentProvider = provider,
+                    currentModel = model,
+                )
+            }
         }
 
         if (conversationId != null) {

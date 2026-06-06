@@ -157,12 +157,12 @@ class StreamingClient(
         val response = client.newCall(request).execute()
         if (!response.isSuccessful) {
             val apiError = ApiError.fromHttpCode(response.code, response.message)
-            throw apiError.toException()
+            throw apiError
         }
 
-        val body = response.body?.string() ?: throw ApiError.UnknownError("Empty response").toException()
+        val body = response.body?.string() ?: throw ApiError.UnknownError("Empty response")
         val moshiAdapter = moshi.adapter(ModelsListResponse::class.java)
-        val modelsResponse = moshiAdapter.fromJson(body) ?: throw ApiError.UnknownError("Parse error").toException()
+        val modelsResponse = moshiAdapter.fromJson(body) ?: throw ApiError.UnknownError("Parse error")
         modelsResponse.data.map { it.id }
     }
 }
