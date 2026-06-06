@@ -39,7 +39,7 @@ class SyntaxHighlighter @Inject constructor() {
         val keywords: Set<String>,
         val builtins: Set<String>,
         val constants: Set<String>,
-        val typeKeywords: Set<String>,
+        val typeKeywords: Set<String> = emptySet(),
         val singleLineComment: String? = "//",
         val multiLineCommentStart: String? = "/*",
         val multiLineCommentEnd: String? = "*/",

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.openclaude.android.data.model.Model
 import com.openclaude.android.data.model.Provider
 import com.openclaude.android.data.network.NetworkConnectivityMonitor
+import com.openclaude.android.data.network.NetworkState
 import com.openclaude.android.data.remote.ApiError
 import com.openclaude.android.data.remote.StreamEvent
 import com.openclaude.android.data.repository.ChatRepository
@@ -205,13 +206,17 @@ class ChatViewModel @Inject constructor(
         val models = Model.defaultModels(provider)
         val model = models.first()
         _uiState.update { it.copy(currentProvider = provider, currentModel = model) }
-        settingsRepository.setSelectedProvider(provider)
-        settingsRepository.setSelectedModel(model)
+        viewModelScope.launch {
+            settingsRepository.setSelectedProvider(provider)
+            settingsRepository.setSelectedModel(model.id)
+        }
     }
 
     fun setModel(model: Model) {
         _uiState.update { it.copy(currentModel = model) }
-        settingsRepository.setSelectedModel(model)
+        viewModelScope.launch {
+            settingsRepository.setSelectedModel(model.id)
+        }
     }
 
     fun clearError() {

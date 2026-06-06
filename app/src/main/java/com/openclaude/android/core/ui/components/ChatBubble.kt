@@ -10,13 +10,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import com.openclaude.android.data.model.ChatMessage
+import com.openclaude.android.domain.model.MessageUiModel
 import com.openclaude.android.core.ui.theme.Indigo500
 import com.openclaude.android.core.ui.theme.DarkSurfaceVariant
 
 @Composable
 fun ChatBubble(
-    message: ChatMessage,
+    message: MessageUiModel,
     modifier: Modifier = Modifier
 ) {
     val isUser = message.role == "user"

@@ -66,14 +66,43 @@ class TerminalRepository @Inject constructor(
         }
     }
 
-    private fun createSession(): TerminalSession {
-        val session = TerminalSession()
+    fun createSession(name: String = "Terminal"): TerminalSession {
+        val session = TerminalSession(name = name)
         _sessions.value = _sessions.value + session
         _activeSession.value = session
         return session
     }
 
+    fun setActiveSession(sessionId: String) {
+        val session = _sessions.value.find { it.id == sessionId } ?: return
+        _activeSession.value = session
+    }
+
+    fun deleteSession(sessionId: String) {
+        _sessions.value = _sessions.value.filter { it.id != sessionId }
+        if (_activeSession.value?.id == sessionId) {
+            _activeSession.value = _sessions.value.firstOrNull()
+        }
+    }
+
     fun clearSession() {
+        _activeSession.value = _activeSession.value?.copy(history = emptyList())
+    }
+
+    fun clearSession(sessionId: String) {
+        if (_activeSession.value?.id == sessionId) {
+            clearSession()
+        } else {
+            val session = _sessions.value.find { it.id == sessionId }
+            if (session != null) {
+                val idx = _sessions.value.indexOf(session)
+                val updated = session.copy(history = emptyList())
+                val sessions = _sessions.value.toMutableList()
+                sessions[idx] = updated
+                _sessions.value = sessions
+            }
+        }
+    }
         _activeSession.value = _activeSession.value?.copy(history = emptyList())
     }
 }

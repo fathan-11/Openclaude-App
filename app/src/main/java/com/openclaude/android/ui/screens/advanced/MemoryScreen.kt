@@ -60,11 +60,13 @@ private fun MemoryCard(entry: MemoryEntry, onDelete: () -> Unit) {
 }
 
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 private fun AddMemoryDialog(onDismiss: () -> Unit, onAdd: (String, String, String) -> Unit, categories: List<String>) {
     var key by remember { mutableStateOf("") }
     var value by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("general") }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     AlertDialog(onDismissRequest = onDismiss, title = { Text("Add Memory") },
         text = { Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedTextField(value = key, onValueChange = { key = it }, label = { Text("Key") }, singleLine = true, modifier = Modifier.fillMaxWidth())

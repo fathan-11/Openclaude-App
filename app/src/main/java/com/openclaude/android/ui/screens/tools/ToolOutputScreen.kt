@@ -16,7 +16,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.openclaude.android.data.model.*
+import com.openclaude.android.data.model.ToolExecution
+import com.openclaude.android.data.model.ToolStatus as DataToolStatus
+import com.openclaude.android.data.model.ToolType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -108,11 +110,11 @@ private fun ToolCard(execution: ToolExecution, onClick: () -> Unit) {
     }
 
     val statusColor = when (execution.status) {
-        ToolStatus.COMPLETED -> MaterialTheme.colorScheme.primary
-        ToolStatus.FAILED -> MaterialTheme.colorScheme.error
-        ToolStatus.RUNNING -> MaterialTheme.colorScheme.tertiary
-        ToolStatus.PENDING -> MaterialTheme.colorScheme.onSurfaceVariant
-        ToolStatus.CANCELLED -> MaterialTheme.colorScheme.error
+        DataToolStatus.COMPLETED -> MaterialTheme.colorScheme.primary
+        DataToolStatus.FAILED -> MaterialTheme.colorScheme.error
+        DataToolStatus.RUNNING -> MaterialTheme.colorScheme.tertiary
+        DataToolStatus.PENDING -> MaterialTheme.colorScheme.onSurfaceVariant
+        DataToolStatus.CANCELLED -> MaterialTheme.colorScheme.error
     }
 
     Card(

@@ -114,6 +114,14 @@ fun NavGraph() {
                 ConversationListScreen(
                     onConversationClick = { id ->
                         navController.navigate(Routes.chatWithId(id))
+                    },
+                    onNewChat = {
+                        navController.navigate(Routes.CHAT) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                        }
                     }
                 )
             }

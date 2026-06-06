@@ -74,6 +74,13 @@ class McpRepository @Inject constructor(
         }
     }
 
+    private val _tools = MutableStateFlow<List<McpTool>>(emptyList())
+    val tools: StateFlow<List<McpTool>> = _tools.asStateFlow()
+
+    suspend fun registerTools(serverId: String, tools: List<McpTool>) {
+        _tools.value = _tools.value.filter { it.serverId != serverId } + tools
+    }
+
     suspend fun executeTool(toolName: String, input: Map<String, Any>): Result<ToolResult> {
         return try {
             val result = mcpApiService.executeTool(toolName, input)

@@ -4,7 +4,7 @@ package com.openclaude.android.data.remote
  * Sealed class representing different types of API errors.
  * Provides structured error handling for all API operations.
  */
-sealed class ApiError(val message: String, val code: Int? = null) {
+sealed class ApiError(message: String, val code: Int? = null) : Exception(message) {
     
     /** Network connectivity issues */
     class NetworkError(message: String) : ApiError(message)

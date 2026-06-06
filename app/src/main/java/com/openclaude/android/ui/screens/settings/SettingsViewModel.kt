@@ -33,18 +33,14 @@ class SettingsViewModel @Inject constructor(
     private fun loadSettings() {
         viewModelScope.launch {
             combine(
-                settingsRepository.currentProvider,
-                settingsRepository.getApiKey(),
-                settingsRepository.getBaseUrl(),
+                settingsRepository.selectedProvider,
                 settingsRepository.selectedModel,
-                settingsRepository.isDarkMode
-            ) { provider, apiKey, baseUrl, model, dark ->
+                settingsRepository.themeMode
+            ) { provider, model, theme ->
                 SettingsUiState(
                     currentProvider = provider,
-                    apiKey = apiKey,
-                    baseUrl = baseUrl,
                     selectedModel = model,
-                    isDarkMode = dark
+                    isDarkMode = theme == "dark"
                 )
             }.collect { _uiState.value = it }
         }
@@ -52,7 +48,7 @@ class SettingsViewModel @Inject constructor(
 
     fun setProvider(provider: Provider) {
         viewModelScope.launch {
-            settingsRepository.setProvider(provider)
+            settingsRepository.setSelectedProvider(provider)
             _uiState.update { it.copy(currentProvider = provider) }
         }
     }
@@ -71,7 +67,7 @@ class SettingsViewModel @Inject constructor(
 
     fun setDarkMode(enabled: Boolean) {
         viewModelScope.launch {
-            settingsRepository.setDarkMode(enabled)
+            settingsRepository.setThemeMode(if (enabled) "dark" else "light")
             _uiState.update { it.copy(isDarkMode = enabled) }
         }
     }
@@ -79,9 +75,9 @@ class SettingsViewModel @Inject constructor(
     fun saveSettings() {
         viewModelScope.launch {
             val state = _uiState.value
-            settingsRepository.setApiKey(state.apiKey)
-            settingsRepository.setBaseUrl(state.baseUrl)
-            settingsRepository.setModel(state.selectedModel)
+            settingsRepository.setSelectedProvider(state.currentProvider)
+            settingsRepository.setSelectedModel(state.selectedModel)
+            settingsRepository.setThemeMode(if (state.isDarkMode) "dark" else "light")
             _uiState.update { it.copy(saved = true) }
         }
     }

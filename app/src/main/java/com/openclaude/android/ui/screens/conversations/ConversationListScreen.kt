@@ -27,7 +27,8 @@ fun ConversationListScreen(
     onNewChat: () -> Unit,
     viewModel: ConversationListViewModel = hiltViewModel()
 ) {
-    val conversations by viewModel.conversations.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+    val conversations = uiState.conversations
 
     Scaffold(
         topBar = {
@@ -119,7 +120,7 @@ private fun ConversationCard(
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = "${conversation.messages.size} messages • ${conversation.model}",
+                    text = "${conversation.messageCount} messages \u2022 ${conversation.model}"
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

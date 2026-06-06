@@ -94,6 +94,9 @@ dependencies {
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
 
+    // Serialization
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+
     // LeakCanary (debug only)
     debugImplementation("com.squareup.leakcanary:leakcanary-android:2.13")
 

@@ -63,3 +63,7 @@ val GradientEnd = Color(0xFFFFB088)
 val GlassBackground = Color(0x15FFFFFF)
 val GlassBorder = Color(0x25FFFFFF)
 val GlassSurface = Color(0x0DFFFFFF)
+
+// -- Legacy Color Aliases -------------------------------------------------
+val Indigo500 = Color(0xFF5C6BC0)
+val Violet400 = Color(0xFF7C4DFF)

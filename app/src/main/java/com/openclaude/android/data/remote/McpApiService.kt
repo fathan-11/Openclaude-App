@@ -22,6 +22,9 @@ interface McpApiService {
     @POST("mcp/tools/{name}/execute")
     suspend fun executeTool(@Path("name") toolName: String, @Body input: Map<String, Any>): ToolResult
 
+    @GET("mcp/servers/{id}/tools")
+    suspend fun listTools(@Path("id") serverId: String): List<McpTool>
+
     @GET("mcp/servers/{id}/resources")
     suspend fun getResources(@Path("id") serverId: String): List<McpResource>
 }
