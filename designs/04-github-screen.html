@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OpenClaude · GitHub Screen</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+    :root {
+      --bg:#000;--surface:#111118;--card:#16161F;--fg:#F5F5F7;--muted:#71717A;
+      --border:#252535;--accent:#7C3AED;--accent-soft:rgba(124,58,237,0.15);
+      --secondary:#22D3EE;--green:#4ADE80;--red:#F87171;--yellow:#FACC15;
+      --font-body:'Inter',-apple-system,sans-serif;--font-mono:'JetBrains Mono',monospace;
+    }
+    *,*::before,*::after{box-sizing:border-box}
+    html,body{margin:0;padding:0;height:100%}
+    body{background:#0A0A0F;color:var(--fg);font-family:var(--font-body);display:grid;place-items:center;padding:32px}
+    .stage{display:flex;flex-direction:column;align-items:center;gap:24px}
+    .caption{font-family:var(--font-mono);font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted)}
+    .caption strong{color:var(--accent);font-weight:500}
+    .device{position:relative;width:390px;height:844px;border-radius:56px;padding:12px;background:linear-gradient(160deg,#1a1a1c,#0e0e10,#050507);box-shadow:0 0 0 1px rgba(255,255,255,0.04) inset,0 0 0 2px #000 inset,0 0 0 3px var(--border),0 28px 60px -12px rgba(0,0,0,0.8),0 0 100px rgba(124,58,237,0.08);isolation:isolate}
+    .device::before,.device::after{content:'';position:absolute;width:3px;background:linear-gradient(to bottom,transparent,rgba(255,255,255,0.06) 8%,transparent 16%,transparent 84%,rgba(255,255,255,0.04) 92%,transparent);top:100px;bottom:100px;pointer-events:none}
+    .device::before{left:-1px}.device::after{right:-1px}
+    .island{position:absolute;top:22px;left:50%;transform:translateX(-50%);width:124px;height:36px;background:#000;border-radius:999px;z-index:5}
+    .btn-rail{position:absolute;width:4px;background:#0a0a0c;border-radius:2px}
+    .btn-rail.left-1{left:-3px;top:174px;height:32px}.btn-rail.left-2{left:-3px;top:220px;height:60px}
+    .btn-rail.left-3{left:-3px;top:290px;height:60px}.btn-rail.right-1{right:-3px;top:250px;height:100px}
+    .screen{position:relative;width:100%;height:100%;background:var(--bg);border-radius:44px;overflow:hidden;display:flex;flex-direction:column}
+    .statusbar{flex:0 0 47px;padding:18px 26px 0;display:flex;align-items:flex-start;justify-content:space-between;font-size:15px;font-weight:600;color:var(--fg)}
+    .statusbar .right{display:flex;gap:6px;align-items:center}.statusbar svg{height:11px}.statusbar .battery{width:25px}
+    .home-indicator{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;background:rgba(255,255,255,0.25);border-radius:999px}
+    .topbar{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:8px 16px 12px;background:var(--surface);border-bottom:0.5px solid var(--border)}
+    .topbar .title{display:flex;align-items:center;gap:8px;font-weight:700;font-size:18px}
+    .topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--secondary);box-shadow:0 0 12px var(--secondary)}
+    .content{flex:1;overflow-y:auto;padding:16px}
+    .search-bar{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:16px}
+    .search-bar input{flex:1;background:transparent;border:none;outline:none;color:var(--fg);font-size:14px}
+    .search-bar input::placeholder{color:var(--muted)}
+    .repo-card{background:var(--card);border-radius:12px;border:0.5px solid var(--border);padding:16px;margin-bottom:12px}
+    .repo-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+    .repo-name{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--accent)}
+    .repo-visibility{padding:2px 8px;border-radius:6px;font-size:10px;font-weight:500;background:var(--accent-soft);color:var(--accent)}
+    .repo-desc{font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.4}
+    .repo-stats{display:flex;gap:16px;font-size:12px;color:var(--muted)}
+    .repo-stats span{display:flex;align-items:center;gap:4px}
+    .repo-lang{display:flex;align-items:center;gap:4px}
+    .lang-dot{width:8px;height:8px;border-radius:50%}
+    .lang-dot.kotlin{background:#A97BFF}
+    .lang-dot.python{background:#3572A5}
+    .lang-dot.ts{background:#3178C6}
+    .pr-card{background:var(--card);border-radius:12px;border:0.5px solid var(--border);padding:14px;margin-bottom:10px}
+    .pr-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+    .pr-icon{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px}
+    .pr-icon.open{background:rgba(74,222,128,0.15)}
+    .pr-icon.merged{background:rgba(124,58,237,0.15)}
+    .pr-title{font-size:14px;font-weight:500;flex:1}
+    .pr-meta{font-size:12px;color:var(--muted);display:flex;gap:12px}
+    .pr-meta span{display:flex;align-items:center;gap:4px}
+    .activity-item{display:flex;gap:12px;padding:12px 0;border-bottom:0.5px solid var(--border)}
+    .activity-item:last-child{border-bottom:none}
+    .activity-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+    .activity-icon.commit{background:rgba(74,222,128,0.15)}
+    .activity-icon.pr{background:rgba(124,58,237,0.15)}
+    .activity-icon.issue{background:rgba(248,113,113,0.15)}
+    .activity-text{flex:1;font-size:13px;line-height:1.4}
+    .activity-text strong{font-weight:600}
+    .activity-time{font-size:11px;color:var(--muted);margin-top:4px}
+    .tabbar{flex:0 0 auto;display:grid;grid-template-columns:repeat(6,1fr);padding:8px 8px 0;border-top:0.5px solid var(--border);background:rgba(0,0,0,0.9);backdrop-filter:blur(20px)}
+    .tab{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;color:var(--muted);font-size:9px;text-decoration:none}
+    .tab.active{color:var(--accent)}.tab svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.7}.tab.active svg{stroke-width:2}
+  </style>
+</head>
+<body>
+<div class="stage">
+  <div class="caption"><strong>OpenClaude</strong> · GitHub Screen</div>
+  <div class="device">
+    <span class="btn-rail left-1"></span><span class="btn-rail left-2"></span><span class="btn-rail left-3"></span><span class="btn-rail right-1"></span><span class="island"></span>
+    <div class="screen">
+      <div class="statusbar">
+        <span>9:41</span>
+        <span class="right">
+          <svg viewBox="0 0 17 11"><rect x="0" y="7" width="3" height="4" rx="0.6"/><rect x="4" y="5" width="3" height="6" rx="0.6"/><rect x="8" y="3" width="3" height="8" rx="0.6"/><rect x="12" y="0" width="3" height="11" rx="0.6"/></svg>
+          <svg viewBox="0 0 17 11"><path d="M8.5 1.5C5.5 1.5 2.7 2.6 0.5 4.6L2 6.1C3.8 4.5 6.1 3.6 8.5 3.6c2.4 0 4.7 0.9 6.5 2.5l1.5-1.5c-2.2-2-5-3.1-8-3.1z"/></svg>
+          <svg class="battery" viewBox="0 0 25 11"><rect x="0.5" y="0.5" width="21" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-opacity="0.45"/><rect x="22" y="3.5" width="1.5" height="4" rx="0.4" fill="currentColor" fill-opacity="0.45"/><rect x="2" y="2" width="18" height="7" rx="1.4"/></svg>
+        </span>
+      </div>
+      <div class="topbar">
+        <div class="title"><span class="dot"></span>GitHub</div>
+        <div style="width:32px"></div>
+      </div>
+      <div class="content">
+        <div class="search-bar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input placeholder="Search repositories..." />
+        </div>
+
+        <div class="repo-card">
+          <div class="repo-header">
+            <div class="repo-name"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Openclaude-App</div>
+            <span class="repo-visibility">Public</span>
+          </div>
+          <p class="repo-desc">Android app for OpenClaude — AI-powered coding assistant with terminal, file browser, and GitHub integration.</p>
+          <div class="repo-stats">
+            <span class="repo-lang"><span class="lang-dot kotlin"></span>Kotlin</span>
+            <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>128</span>
+            <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>24</span>
+          </div>
+        </div>
+
+        <div class="repo-card">
+          <div class="repo-header">
+            <div class="repo-name"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>open-design</div>
+            <span class="repo-visibility">Public</span>
+          </div>
+          <p class="repo-desc">The open-source Claude Design alternative — 150+ design systems, 261 plugins, 21 coding agents.</p>
+          <div class="repo-stats">
+            <span class="repo-lang"><span class="lang-dot ts"></span>TypeScript</span>
+            <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>28.4k</span>
+            <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>1.2k</span>
+          </div>
+        </div>
+
+        <div class="pr-card">
+          <div class="pr-header">
+            <div class="pr-icon open"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M6 21V9a9 9 0 0 0 9 9"/></svg></div>
+            <span class="pr-title">feat: modern black theme UI</span>
+          </div>
+          <div class="pr-meta">
+            <span>#142</span>
+            <span>by fathan-11</span>
+            <span>2 hours ago</span>
+          </div>
+        </div>
+
+        <div class="pr-card">
+          <div class="pr-header">
+            <div class="pr-icon merged"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <span class="pr-title">fix: comprehensive build fixes</span>
+          </div>
+          <div class="pr-meta">
+            <span>#141</span>
+            <span>merged</span>
+            <span>5 hours ago</span>
+          </div>
+        </div>
+      </div>
+      <nav class="tabbar">
+        <a class="tab"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chat</a>
+        <a class="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>History</a>
+        <a class="tab"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Files</a>
+        <a class="tab"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>Search</a>
+        <a class="tab"><svg viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>Terminal</a>
+        <a class="tab"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</a>
+      </nav>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
