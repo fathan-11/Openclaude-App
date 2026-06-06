@@ -81,7 +81,7 @@ fun ChatScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BlackPure)
+            .background(DeepBlack)
     ) {
         // ── Offline Banner ─────────────────────────────────────
         AnimatedVisibility(visible = !isOnline) {
@@ -91,14 +91,14 @@ fun ChatScreen(
                     .background(
                         brush = Brush.horizontalGradient(
                             colors = listOf(
-                                Red500.copy(alpha = 0.15f),
-                                Red500.copy(alpha = 0.05f)
+                                RedError.copy(alpha = 0.15f),
+                                RedError.copy(alpha = 0.05f)
                             )
                         )
                     )
                     .border(
                         width = 1.dp,
-                        color = Red500.copy(alpha = 0.3f),
+                        color = RedError.copy(alpha = 0.3f),
                         shape = RoundedCornerShape(0.dp)
                     )
             ) {
@@ -113,13 +113,13 @@ fun ChatScreen(
                         Icons.Default.CloudOff,
                         contentDescription = null,
                         modifier = Modifier.size(16.dp),
-                        tint = Red400
+                        tint = RedError
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "No internet connection",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Red400,
+                        color = RedError,
                         fontWeight = FontWeight.Medium
                     )
                 }
@@ -207,14 +207,14 @@ private fun ModernChatHeader(
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        BlackSurface,
-                        BlackPure
+                        SurfaceDark,
+                        DeepBlack
                     )
                 )
             )
             .border(
                 width = 0.5.dp,
-                color = BlackBorder,
+                color = BorderDark,
                 shape = RoundedCornerShape(0.dp)
             )
     ) {
@@ -253,16 +253,16 @@ private fun ModernChatHeader(
                             Icons.Default.Memory,
                             contentDescription = null,
                             modifier = Modifier.size(16.dp),
-                            tint = Cyan400
+                            tint = PurpleAccent
                         )
                     },
                     colors = AssistChipDefaults.assistChipColors(
-                        containerColor = BlackCard,
+                        containerColor = SurfaceElevated,
                         labelColor = TextPrimary,
-                        leadingIconContentColor = Cyan400
+                        leadingIconContentColor = PurpleAccent
                     ),
                     border = AssistChipDefaults.assistChipBorder(
-                        borderColor = BlackBorder,
+                        borderColor = BorderDark,
                         enabled = true
                     )
                 )
@@ -276,7 +276,7 @@ private fun ModernChatHeader(
                             text = {
                                 Text(
                                     text = model.name,
-                                    color = if (model == currentModel) Violet500 else TextPrimary
+                                    color = if (model == currentModel) Orange300 else TextPrimary
                                 )
                             },
                             onClick = {
@@ -295,21 +295,21 @@ private fun ModernChatHeader(
                     .shadow(
                         elevation = 4.dp,
                         shape = CircleShape,
-                        ambientColor = Violet500.copy(alpha = 0.2f),
-                        spotColor = Violet500.copy(alpha = 0.2f)
+                        ambientColor = Orange300.copy(alpha = 0.2f),
+                        spotColor = Orange300.copy(alpha = 0.2f)
                     )
                     .background(
                         brush = Brush.radialGradient(
                             colors = listOf(
-                                Violet500.copy(alpha = 0.15f),
-                                Violet500.copy(alpha = 0.05f)
+                                Orange300.copy(alpha = 0.15f),
+                                Orange300.copy(alpha = 0.05f)
                             )
                         ),
                         shape = CircleShape
                     )
                     .border(
                         width = 1.dp,
-                        color = Violet500.copy(alpha = 0.3f),
+                        color = Orange300.copy(alpha = 0.3f),
                         shape = CircleShape
                     )
             ) {
@@ -338,14 +338,14 @@ private fun ModernErrorBanner(
             .background(
                 brush = Brush.horizontalGradient(
                     colors = listOf(
-                        Red500.copy(alpha = 0.1f),
-                        Red500.copy(alpha = 0.03f)
+                        RedError.copy(alpha = 0.1f),
+                        RedError.copy(alpha = 0.03f)
                     )
                 )
             )
             .border(
                 width = 0.5.dp,
-                color = Red500.copy(alpha = 0.2f)
+                color = RedError.copy(alpha = 0.2f)
             )
     ) {
         Column(
@@ -363,13 +363,13 @@ private fun ModernErrorBanner(
                     Icon(
                         Icons.Outlined.ErrorOutline,
                         contentDescription = null,
-                        tint = Red400,
+                        tint = RedError,
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = error,
-                        color = Red400,
+                        color = RedError,
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Medium
                     )
@@ -378,7 +378,7 @@ private fun ModernErrorBanner(
                     Icon(
                         Icons.Default.Close,
                         contentDescription = "Dismiss",
-                        tint = Red400.copy(alpha = 0.6f),
+                        tint = RedError.copy(alpha = 0.6f),
                         modifier = Modifier.size(16.dp)
                     )
                 }
@@ -389,16 +389,16 @@ private fun ModernErrorBanner(
                 Button(
                     onClick = onRetry,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Red500.copy(alpha = 0.15f),
-                        contentColor = Red400
+                        containerColor = RedError.copy(alpha = 0.15f),
+                        contentColor = RedError
                     ),
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
                     border = ButtonDefaults.outlinedButtonBorder.copy(
                         brush = Brush.horizontalGradient(
                             colors = listOf(
-                                Red500.copy(alpha = 0.3f),
-                                Red500.copy(alpha = 0.1f)
+                                RedError.copy(alpha = 0.3f),
+                                RedError.copy(alpha = 0.1f)
                             )
                         )
                     )
@@ -437,21 +437,21 @@ private fun ModernEmptyState(provider: Provider) {
                 .shadow(
                     elevation = 16.dp,
                     shape = CircleShape,
-                    ambientColor = Violet500.copy(alpha = 0.2f),
-                    spotColor = Violet500.copy(alpha = 0.2f)
+                    ambientColor = Orange300.copy(alpha = 0.2f),
+                    spotColor = Orange300.copy(alpha = 0.2f)
                 )
                 .background(
                     brush = Brush.radialGradient(
                         colors = listOf(
-                            Violet500.copy(alpha = 0.15f),
-                            Violet500.copy(alpha = 0.03f)
+                            Orange300.copy(alpha = 0.15f),
+                            Orange300.copy(alpha = 0.03f)
                         )
                     ),
                     shape = CircleShape
                 )
                 .border(
                     width = 1.dp,
-                    color = Violet500.copy(alpha = 0.2f),
+                    color = Orange300.copy(alpha = 0.2f),
                     shape = CircleShape
                 ),
             contentAlignment = Alignment.Center
@@ -510,12 +510,12 @@ private fun QuickActionChip(
     Surface(
         onClick = { /* TODO: quick action */ },
         shape = RoundedCornerShape(20.dp),
-        color = BlackCard,
+        color = SurfaceElevated,
         border = ButtonDefaults.outlinedButtonBorder.copy(
             brush = Brush.horizontalGradient(
                 colors = listOf(
-                    BlackBorder,
-                    BlackBorder.copy(alpha = 0.5f)
+                    BorderDark,
+                    BorderDark.copy(alpha = 0.5f)
                 )
             )
         )
@@ -558,7 +558,7 @@ private fun ModernThinkingIndicator() {
                 .background(
                     brush = Brush.radialGradient(
                         colors = listOf(
-                            Violet500.copy(alpha = 0.15f),
+                            Orange300.copy(alpha = 0.15f),
                             Color.Transparent
                         )
                     ),

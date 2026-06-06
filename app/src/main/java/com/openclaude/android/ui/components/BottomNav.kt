@@ -25,8 +25,8 @@ import com.openclaude.android.core.ui.theme.*
 import com.openclaude.android.ui.navigation.BottomNavItem
 
 // ═══════════════════════════════════════════════════════════════
-// MODERN BLACK BOTTOM NAVIGATION
-// Glass morphism + pill indicator + glow effects
+// DARK MODE + ORANGE BOTTOM NAVIGATION
+// Clean dark bar with orange accent for active items
 // ═══════════════════════════════════════════════════════════════
 
 @Composable
@@ -35,16 +35,15 @@ fun BottomNav(
     currentRoute: String,
     onNavigate: (String) -> Unit
 ) {
-    // Glass morphism background
     NavigationBar(
-        containerColor = Color.Transparent,
+        containerColor = SurfaceDark,
         contentColor = TextPrimary,
         modifier = Modifier
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
                         Color.Transparent,
-                        BlackPure.copy(alpha = 0.95f)
+                        SurfaceDark
                     )
                 )
             )
@@ -55,13 +54,13 @@ fun BottomNav(
 
             // Animated colors
             val iconColor by animateColorAsState(
-                targetValue = if (isSelected) Violet500 else TextTertiary,
+                targetValue = if (isSelected) Orange300 else TextTertiary,
                 animationSpec = spring(stiffness = Spring.StiffnessLow),
                 label = "icon_color"
             )
 
             val textColor by animateColorAsState(
-                targetValue = if (isSelected) Violet500 else TextTertiary,
+                targetValue = if (isSelected) Orange300 else TextTertiary,
                 animationSpec = spring(stiffness = Spring.StiffnessLow),
                 label = "text_color"
             )
@@ -76,14 +75,14 @@ fun BottomNav(
                                         .shadow(
                                             elevation = 8.dp,
                                             shape = RoundedCornerShape(12.dp),
-                                            ambientColor = Violet500.copy(alpha = 0.3f),
-                                            spotColor = Violet500.copy(alpha = 0.3f)
+                                            ambientColor = Orange300.copy(alpha = 0.2f),
+                                            spotColor = Orange300.copy(alpha = 0.2f)
                                         )
                                         .background(
                                             brush = Brush.verticalGradient(
                                                 colors = listOf(
-                                                    Violet500.copy(alpha = 0.15f),
-                                                    Violet500.copy(alpha = 0.05f)
+                                                    Orange300.copy(alpha = 0.15f),
+                                                    Orange300.copy(alpha = 0.05f)
                                                 )
                                             ),
                                             shape = RoundedCornerShape(12.dp)

@@ -13,61 +13,61 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 // ═══════════════════════════════════════════════════════════════
-// MODERN BLACK THEME — Dark Mode Only (Primary)
-// Pure black + electric violet + glass morphism
+// DARK MODE + ORANGE ACCENT THEME (v3)
+// MeetGen-inspired: Dark charcoal + warm orange + cream cards
 // ═══════════════════════════════════════════════════════════════
 
-private val ModernBlackScheme = darkColorScheme(
-    // Primary — Electric Violet
-    primary = Violet500,
-    onPrimary = Color.White,
-    primaryContainer = Violet700,
-    onPrimaryContainer = Violet100,
+private val DarkOrangeScheme = darkColorScheme(
+    // Primary — Orange Accent
+    primary = Orange300,
+    onPrimary = TextOnOrange,
+    primaryContainer = Orange400,
+    onPrimaryContainer = CreamLight,
 
-    // Secondary — Cyan
-    secondary = Cyan400,
-    onSecondary = BlackPure,
-    secondaryContainer = Cyan600,
-    onSecondaryContainer = Cyan100,
+    // Secondary — Purple Accent
+    secondary = PurpleAccent,
+    onSecondary = DeepBlack,
+    secondaryContainer = SurfaceElevated,
+    onSecondaryContainer = TextPrimary,
 
-    // Tertiary — Green
-    tertiary = Green400,
-    onTertiary = BlackPure,
-    tertiaryContainer = Green500,
-    onTertiaryContainer = Green100,
+    // Tertiary — Green Success
+    tertiary = GreenSuccess,
+    onTertiary = DeepBlack,
+    tertiaryContainer = GreenLight,
+    onTertiaryContainer = GreenSuccess,
 
-    // Background — Pure Black
-    background = BlackPure,
+    // Background — Deep Black
+    background = DeepBlack,
     onBackground = TextPrimary,
 
-    // Surface — Near Black
-    surface = BlackSurface,
+    // Surface — Dark Surface
+    surface = SurfaceDark,
     onSurface = TextPrimary,
-    surfaceVariant = BlackCard,
+    surfaceVariant = SurfaceElevated,
     onSurfaceVariant = TextSecondary,
 
-    // Error
-    error = Red400,
-    onError = BlackPure,
-    errorContainer = Color(0xFF3D1515),
-    onErrorContainer = Red400,
+    // Error — Orange Red
+    error = RedError,
+    onError = DeepBlack,
+    errorContainer = RedLight,
+    onErrorContainer = RedError,
 
     // Outline
-    outline = BlackBorder,
-    outlineVariant = Color(0xFF1E1E2E),
+    outline = BorderDark,
+    outlineVariant = SurfaceElevated,
 )
 
 // ── Light Theme (Fallback) ────────────────────────────────────
 private val LightColorScheme = lightColorScheme(
-    primary = Violet600,
+    primary = Orange300,
     onPrimary = Color.White,
-    primaryContainer = Violet100,
-    onPrimaryContainer = Violet700,
-    secondary = Cyan500,
+    primaryContainer = Orange100,
+    onPrimaryContainer = Orange500,
+    secondary = PurpleAccent,
     onSecondary = Color.White,
-    secondaryContainer = Cyan100,
-    onSecondaryContainer = Cyan600,
-    tertiary = Green500,
+    secondaryContainer = Color(0xFFF5F0FF),
+    onSecondaryContainer = PurpleAccent,
+    tertiary = GreenSuccess,
     onTertiary = Color.White,
     background = Color(0xFFFAFAFA),
     onBackground = Color(0xFF09090B),
@@ -75,7 +75,7 @@ private val LightColorScheme = lightColorScheme(
     onSurface = Color(0xFF09090B),
     surfaceVariant = Color(0xFFF4F4F5),
     onSurfaceVariant = Color(0xFF71717A),
-    error = Red500,
+    error = RedError,
     onError = Color.White,
     outline = Color(0xFFE4E4E7),
     outlineVariant = Color(0xFFF4F4F5),
@@ -86,16 +86,16 @@ fun OpenClaudeTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    // Always use dark theme for modern black UI
-    val colorScheme = ModernBlackScheme
+    // Always use dark theme for modern UI
+    val colorScheme = DarkOrangeScheme
 
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            // Pure black status bar
-            window.statusBarColor = BlackPure.toArgb()
-            window.navigationBarColor = BlackPure.toArgb()
+            // Dark status bar
+            window.statusBarColor = DeepBlack.toArgb()
+            window.navigationBarColor = SurfaceDark.toArgb()
             WindowCompat.getInsetsController(window, view).apply {
                 isAppearanceLightStatusBars = false
                 isAppearanceLightNavigationBars = false

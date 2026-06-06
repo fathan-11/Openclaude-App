@@ -17,8 +17,8 @@ import androidx.compose.ui.unit.sp
 import com.openclaude.android.core.ui.theme.*
 
 // ═══════════════════════════════════════════════════════════════
-// MODERN BLACK TOP BAR
-// Minimal + glass morphism + accent glow
+// DARK MODE + ORANGE TOP BAR
+// Minimal dark bar with orange accent
 // ═══════════════════════════════════════════════════════════════
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -30,15 +30,15 @@ fun TopBar(title: String) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                // Accent dot
+                // Orange accent dot
                 Box(
                     modifier = Modifier
                         .size(8.dp)
                         .background(
                             brush = Brush.radialGradient(
                                 colors = listOf(
-                                    Violet500,
-                                    Violet500.copy(alpha = 0.0f)
+                                    Orange300,
+                                    Orange300.copy(alpha = 0.0f)
                                 )
                             ),
                             shape = androidx.compose.foundation.shape.CircleShape

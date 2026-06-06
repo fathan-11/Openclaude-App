@@ -16,7 +16,13 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.openclaude.android.core.ui.theme.*
 import kotlinx.coroutines.delay
+
+// ═══════════════════════════════════════════════════════════════
+// SPLASH SCREEN — Dark + Orange Accent
+// Clean dark background with orange glow
+// ═══════════════════════════════════════════════════════════════
 
 @Composable
 fun SplashScreen(onTimeout: () -> Unit) {
@@ -32,27 +38,45 @@ fun SplashScreen(onTimeout: () -> Unit) {
 
     Box(
         modifier = Modifier.fillMaxSize().background(
-            Brush.verticalGradient(listOf(
-                MaterialTheme.colorScheme.primary,
-                MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
-                MaterialTheme.colorScheme.surface
-            ))
+            Brush.verticalGradient(
+                colors = listOf(
+                    DeepBlack,
+                    SurfaceDark
+                )
+            )
         ),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            // Orange glowing circle
             Surface(
                 modifier = Modifier.size(100.dp).scale(scale.value),
                 shape = CircleShape,
-                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f)
+                color = Orange300.copy(alpha = 0.15f)
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Icon(Icons.Default.SmartToy, "OpenClaude", modifier = Modifier.size(56.dp), tint = MaterialTheme.colorScheme.onPrimary)
+                    Icon(
+                        Icons.Default.SmartToy,
+                        "OpenClaude",
+                        modifier = Modifier.size(56.dp),
+                        tint = Orange300
+                    )
                 }
             }
             Spacer(Modifier.height(24.dp))
-            Text("OpenClaude", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.alpha(alpha.value))
-            Text("AI Coding Agent", fontSize = 14.sp, color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f), modifier = Modifier.alpha(alpha.value))
+            Text(
+                "OpenClaude",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                color = TextPrimary,
+                modifier = Modifier.alpha(alpha.value)
+            )
+            Text(
+                "AI Coding Agent",
+                fontSize = 14.sp,
+                color = TextSecondary,
+                modifier = Modifier.alpha(alpha.value)
+            )
         }
     }
 }
