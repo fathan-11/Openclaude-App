@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Settings Screen</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Nunito',sans-serif;background:#1a1a2e;display:flex;justify-content:center;align-items:center;min-height:100vh}
+.phone{width:390px;height:844px;background:#FFF8F0;border-radius:48px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:160px;height:34px;background:#1a1a2e;border-radius:0 0 20px 20px;z-index:10}
+.screen{height:100%;display:flex;flex-direction:column;padding-bottom:90px;overflow-y:auto}
+.screen::-webkit-scrollbar{display:none}
+
+/* Header */
+.header{padding:52px 24px 20px;background:white;border-bottom:1px solid #F0EDE8}
+.header-title{font-family:'Quicksand',sans-serif;font-size:28px;font-weight:700;color:#2D2D3A}
+
+/* Profile Card */
+.profile-card{margin:20px 24px;padding:24px;background:white;border-radius:24px;box-shadow:0 4px 16px rgba(0,0,0,0.06);display:flex;align-items:center;gap:16px}
+.profile-avatar{width:64px;height:64px;border-radius:20px;background:linear-gradient(135deg,#F4845F,#FFB088);display:flex;align-items:center;justify-content:center;font-size:32px;box-shadow:0 4px 12px rgba(244,132,95,0.3)}
+.profile-info{flex:1}
+.profile-name{font-family:'Quicksand',sans-serif;font-size:20px;font-weight:700;color:#2D2D3A}
+.profile-email{font-size:13px;color:#9B9BAF;font-weight:500}
+.profile-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:8px;background:#D4F5E4;font-size:11px;font-weight:700;color:#3DAF68;margin-top:4px}
+.edit-btn{width:40px;height:40px;border-radius:12px;background:#FFF5F0;border:none;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer}
+
+/* Settings Sections */
+.section-label{padding:0 24px;font-family:'Quicksand',sans-serif;font-size:13px;font-weight:700;color:#9B9BAF;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;margin-top:24px}
+.settings-group{margin:0 24px;background:white;border-radius:20px;box-shadow:0 2px 12px rgba(0,0,0,0.04);overflow:hidden}
+.setting-item{display:flex;align-items:center;gap:14px;padding:16px 18px;border-bottom:1px solid #F8F5F0}
+.setting-item:last-child{border-bottom:none}
+.setting-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.setting-icon.coral{background:#FFE8DD}
+.setting-icon.lavender{background:#EDE5FF}
+.setting-icon.mint{background:#D4F5E4}
+.setting-icon.sky{background:#D4ECFF}
+.setting-icon.peach{background:#FFE8D4}
+.setting-info{flex:1}
+.setting-title{font-size:15px;font-weight:700;color:#2D2D3A}
+.setting-desc{font-size:12px;color:#9B9BAF;font-weight:500}
+.setting-arrow{font-size:16px;color:#D0D0D8}
+
+/* Toggle Switch */
+.toggle{width:48px;height:28px;border-radius:14px;background:#E0E0E8;position:relative;cursor:pointer;transition:background 0.3s}
+.toggle.on{background:linear-gradient(135deg,#F4845F,#E86F48)}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:white;box-shadow:0 2px 4px rgba(0,0,0,0.15);transition:transform 0.3s}
+.toggle.on::after{transform:translateX(20px)}
+
+/* Version */
+.version{text-align:center;padding:20px;font-size:13px;color:#9B9BAF;font-weight:500}
+.version strong{color:#6B6B80}
+
+/* Bottom Nav */
+.bottom-nav{position:absolute;bottom:0;left:0;right:0;padding:10px 20px 28px;background:white;border-radius:28px 28px 0 0;box-shadow:0 -4px 20px rgba(0,0,0,0.06)}
+.nav-items{display:flex;justify-content:space-around;align-items:center}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 12px}
+.nav-icon-wrap{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.nav-item.active .nav-icon-wrap{background:#FFE8DD}
+.nav-item span:last-child{font-size:11px;font-weight:600;color:#9B9BAF}
+.nav-item.active span:last-child{color:#F4845F}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="notch"></div>
+  <div class="screen">
+    <div class="header">
+      <div class="header-title">Settings ⚙️</div>
+    </div>
+
+    <div class="profile-card">
+      <div class="profile-avatar">🧑</div>
+      <div class="profile-info">
+        <div class="profile-name">Irfan Fathan</div>
+        <div class="profile-email">irfan@openclaude.dev</div>
+        <div class="profile-badge">✨ Pro Member</div>
+      </div>
+      <button class="edit-btn">✏️</button>
+    </div>
+
+    <div class="section-label">General</div>
+    <div class="settings-group">
+      <div class="setting-item">
+        <div class="setting-icon coral">🎨</div>
+        <div class="setting-info">
+          <div class="setting-title">Appearance</div>
+          <div class="setting-desc">Warm theme • Light mode</div>
+        </div>
+        <div class="setting-arrow">›</div>
+      </div>
+      <div class="setting-item">
+        <div class="setting-icon lavender">🔔</div>
+        <div class="setting-info">
+          <div class="setting-title">Notifications</div>
+          <div class="setting-desc">Push & in-app alerts</div>
+        </div>
+        <div class="toggle on"></div>
+      </div>
+      <div class="setting-item">
+        <div class="setting-icon mint">🌙</div>
+        <div class="setting-info">
+          <div class="setting-title">Dark Mode</div>
+          <div class="setting-desc">Switch to dark theme</div>
+        </div>
+        <div class="toggle"></div>
+      </div>
+    </div>
+
+    <div class="section-label">AI & Models</div>
+    <div class="settings-group">
+      <div class="setting-item">
+        <div class="setting-icon sky">🤖</div>
+        <div class="setting-info">
+          <div class="setting-title">AI Model</div>
+          <div class="setting-desc">Claude Sonnet 4</div>
+        </div>
+        <div class="setting-arrow">›</div>
+      </div>
+      <div class="setting-item">
+        <div class="setting-icon coral">🔑</div>
+        <div class="setting-info">
+          <div class="setting-title">API Keys</div>
+          <div class="setting-desc">Manage your keys</div>
+        </div>
+        <div class="setting-arrow">›</div>
+      </div>
+      <div class="setting-item">
+        <div class="setting-icon lavender">📊</div>
+        <div class="setting-info">
+          <div class="setting-title">Usage & Limits</div>
+          <div class="setting-desc">847 / 1000 tokens today</div>
+        </div>
+        <div class="setting-arrow">›</div>
+      </div>
+    </div>
+
+    <div class="section-label">About</div>
+    <div class="settings-group">
+      <div class="setting-item">
+        <div class="setting-icon mint">📱</div>
+        <div class="setting-info">
+          <div class="setting-title">App Version</div>
+          <div class="setting-desc">v1.1.0 (Build 42)</div>
+        </div>
+        <div class="setting-arrow">›</div>
+      </div>
+      <div class="setting-item">
+        <div class="setting-icon peach">💬</div>
+        <div class="setting-info">
+          <div class="setting-title">Send Feedback</div>
+          <div class="setting-desc">Help us improve</div>
+        </div>
+        <div class="setting-arrow">›</div>
+      </div>
+    </div>
+
+    <div class="version">OpenClaude <strong>v1.1.0</strong> • Made with ❤️</div>
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-items">
+      <div class="nav-item"><div class="nav-icon-wrap">🏠</div><span>Home</span></div>
+      <div class="nav-item"><div class="nav-icon-wrap">💬</div><span>Chat</span></div>
+      <div class="nav-item"><div class="nav-icon-wrap">⌨️</div><span>Terminal</span></div>
+      <div class="nav-item"><div class="nav-icon-wrap">📁</div><span>Files</span></div>
+      <div class="nav-item active"><div class="nav-icon-wrap">⚙️</div><span>Settings</span></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

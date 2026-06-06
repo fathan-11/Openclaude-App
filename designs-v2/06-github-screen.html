@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>GitHub Screen</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Nunito',sans-serif;background:#1a1a2e;display:flex;justify-content:center;align-items:center;min-height:100vh}
+.phone{width:390px;height:844px;background:#FFF8F0;border-radius:48px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:160px;height:34px;background:#1a1a2e;border-radius:0 0 20px 20px;z-index:10}
+.screen{height:100%;display:flex;flex-direction:column;padding-bottom:90px;overflow-y:auto}
+.screen::-webkit-scrollbar{display:none}
+
+/* Header */
+.header{padding:52px 24px 20px;background:white;border-bottom:1px solid #F0EDE8}
+.header-row{display:flex;justify-content:space-between;align-items:center}
+.header-title{font-family:'Quicksand',sans-serif;font-size:28px;font-weight:700;color:#2D2D3A}
+.search-bar{margin-top:14px;display:flex;align-items:center;gap:10px;padding:12px 16px;background:#FFF5F0;border-radius:14px}
+.search-bar input{flex:1;border:none;background:none;font-family:'Nunito',sans-serif;font-size:14px;font-weight:500;color:#2D2D3A;outline:none}
+.search-bar input::placeholder{color:#9B9BAF}
+
+/* Tabs */
+.tabs{display:flex;padding:12px 24px;gap:8px}
+.tab{padding:10px 18px;border-radius:12px;font-size:13px;font-weight:700;color:#9B9BAF;cursor:pointer;transition:all 0.2s}
+.tab.active{background:linear-gradient(135deg,#F4845F,#E86F48);color:white;box-shadow:0 4px 12px rgba(244,132,95,0.3)}
+
+/* Repo Card */
+.repo-list{padding:0 24px;display:flex;flex-direction:column;gap:12px}
+.repo-card{padding:18px;background:white;border-radius:18px;box-shadow:0 2px 12px rgba(0,0,0,0.04);cursor:pointer;transition:all 0.2s}
+.repo-card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,0.08)}
+.repo-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.repo-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.repo-icon.coral{background:#FFE8DD}
+.repo-icon.lavender{background:#EDE5FF}
+.repo-icon.mint{background:#D4F5E4}
+.repo-name{font-family:'Quicksand',sans-serif;font-size:16px;font-weight:700;color:#2D2D3A}
+.repo-desc{font-size:13px;color:#6B6B80;font-weight:500;margin-bottom:12px;line-height:1.4}
+.repo-stats{display:flex;gap:16px}
+.repo-stat{display:flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:#9B9BAF}
+.stat-dot{width:8px;height:8px;border-radius:50%}
+.stat-dot.kotlin{background:#B49AFF}
+.stat-dot.star{background:#FFB088}
+.stat-dot.fork{background:#A8E6C3}
+
+/* PR Card */
+.pr-list{padding:0 24px;display:flex;flex-direction:column;gap:10px}
+.pr-card{padding:16px;background:white;border-radius:16px;box-shadow:0 2px 8px rgba(0,0,0,0.04);display:flex;align-items:flex-start;gap:12px}
+.pr-status{width:10px;height:10px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.pr-status.open{background:#52C27D}
+.pr-status.merged{background:#B49AFF}
+.pr-status.closed{background:#FF6B6B}
+.pr-info{flex:1}
+.pr-title{font-size:14px;font-weight:700;color:#2D2D3A;margin-bottom:4px}
+.pr-meta{font-size:12px;color:#9B9BAF;font-weight:500}
+.pr-badge{padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700}
+.pr-badge.open{background:#D4F5E4;color:#3DAF68}
+.pr-badge.merged{background:#EDE5FF;color:#7C5CFC}
+
+/* Activity */
+.activity-section{padding:0 24px;margin-top:16px}
+.activity-card{padding:16px;background:white;border-radius:16px;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+.activity-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F8F5F0}
+.activity-row:last-child{border-bottom:none}
+.activity-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.activity-dot.push{background:#52C27D}
+.activity-dot.pr{background:#B49AFF}
+.activity-dot.issue{background:#FFB088}
+.activity-text{font-size:13px;color:#6B6B80;font-weight:500;flex:1}
+.activity-time{font-size:11px;color:#9B9BAF;font-weight:500;white-space:nowrap}
+
+/* Bottom Nav */
+.bottom-nav{position:absolute;bottom:0;left:0;right:0;padding:10px 20px 28px;background:white;border-radius:28px 28px 0 0;box-shadow:0 -4px 20px rgba(0,0,0,0.06)}
+.nav-items{display:flex;justify-content:space-around;align-items:center}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 12px}
+.nav-icon-wrap{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.nav-item.active .nav-icon-wrap{background:#FFE8DD}
+.nav-item span:last-child{font-size:11px;font-weight:600;color:#9B9BAF}
+.nav-item.active span:last-child{color:#F4845F}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="notch"></div>
+  <div class="screen">
+    <div class="header">
+      <div class="header-row">
+        <div class="header-title">GitHub 🐙</div>
+      </div>
+      <div class="search-bar">
+        <span>🔍</span>
+        <input placeholder="Search repos, PRs..." />
+      </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active">Repos</div>
+      <div class="tab">Pull Requests</div>
+      <div class="tab">Activity</div>
+    </div>
+
+    <div class="repo-list">
+      <div class="repo-card">
+        <div class="repo-header">
+          <div class="repo-icon coral">📱</div>
+          <div class="repo-name">Openclaude-App</div>
+        </div>
+        <div class="repo-desc">Kotlin Android AI coding companion with modern warm UI</div>
+        <div class="repo-stats">
+          <div class="repo-stat"><div class="stat-dot kotlin"></div>Kotlin</div>
+          <div class="repo-stat"><div class="stat-dot star"></div>24 stars</div>
+          <div class="repo-stat"><div class="stat-dot fork"></div>8 forks</div>
+        </div>
+      </div>
+
+      <div class="repo-card">
+        <div class="repo-header">
+          <div class="repo-icon lavender">🎨</div>
+          <div class="repo-name">open-design</div>
+        </div>
+        <div class="repo-desc">Design system & templates for modern app UI</div>
+        <div class="repo-stats">
+          <div class="repo-stat"><div class="stat-dot kotlin"></div>HTML</div>
+          <div class="repo-stat"><div class="stat-dot star"></div>12 stars</div>
+          <div class="repo-stat"><div class="stat-dot fork"></div>3 forks</div>
+        </div>
+      </div>
+
+      <div class="repo-card">
+        <div class="repo-header">
+          <div class="repo-icon mint">🤖</div>
+          <div class="repo-name">hermes-agent</div>
+        </div>
+        <div class="repo-desc">AI agent framework with tool use and memory</div>
+        <div class="repo-stats">
+          <div class="repo-stat"><div class="stat-dot kotlin"></div>Python</div>
+          <div class="repo-stat"><div class="stat-dot star"></div>156 stars</div>
+          <div class="repo-stat"><div class="stat-dot fork"></div>42 forks</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="activity-section">
+      <div class="activity-card">
+        <div style="font-family:'Quicksand',sans-serif;font-size:16px;font-weight:700;color:#2D2D3A;margin-bottom:12px">Recent Activity</div>
+        <div class="activity-row">
+          <div class="activity-dot push"></div>
+          <div class="activity-text">Pushed 3 commits to main</div>
+          <div class="activity-time">2h ago</div>
+        </div>
+        <div class="activity-row">
+          <div class="activity-dot pr"></div>
+          <div class="activity-text">Merged PR #12: v1.1.0 WebView</div>
+          <div class="activity-time">1d ago</div>
+        </div>
+        <div class="activity-row">
+          <div class="activity-dot issue"></div>
+          <div class="activity-text">Opened issue #15: Dark mode</div>
+          <div class="activity-time">2d ago</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-items">
+      <div class="nav-item"><div class="nav-icon-wrap">🏠</div><span>Home</span></div>
+      <div class="nav-item"><div class="nav-icon-wrap">💬</div><span>Chat</span></div>
+      <div class="nav-item"><div class="nav-icon-wrap">⌨️</div><span>Terminal</span></div>
+      <div class="nav-item"><div class="nav-icon-wrap">📁</div><span>Files</span></div>
+      <div class="nav-item"><div class="nav-icon-wrap">⚙️</div><span>Settings</span></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
