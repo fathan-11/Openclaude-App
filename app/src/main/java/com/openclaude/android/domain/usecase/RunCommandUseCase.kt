@@ -8,7 +8,7 @@ import javax.inject.Inject
 class RunCommandUseCase @Inject constructor(
     private val terminalRepository: TerminalRepository
 ) {
-    suspend operator fun invoke(command: String, workingDir: String = "/"): Result<TerminalCommand> {
+    suspend operator fun invoke(command: String, workingDir: String = terminalRepository.currentDir.value): Result<TerminalCommand> {
         return terminalRepository.runCommand(command, workingDir)
     }
 

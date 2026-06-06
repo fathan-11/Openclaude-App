@@ -13,7 +13,7 @@ import com.openclaude.android.domain.usecase.BrowseFilesUseCase
 import com.openclaude.android.domain.usecase.ReadFileUseCase
 import com.openclaude.android.domain.usecase.SearchCodeUseCase
 import com.openclaude.android.data.remote.McpApiService
-import com.openclaude.android.data.remote.TerminalApiService
+import com.openclaude.android.data.remote.LocalTerminalEngine
 import com.openclaude.android.data.remote.ToolApiService
 import com.openclaude.android.data.repository.McpRepository
 import com.openclaude.android.data.repository.TerminalRepository
@@ -106,10 +106,16 @@ object RepositoryModule {
 
     @Provides
     @Singleton
+    fun provideLocalTerminalEngine(): LocalTerminalEngine {
+        return LocalTerminalEngine()
+    }
+
+    @Provides
+    @Singleton
     fun provideTerminalRepository(
-        terminalApiService: TerminalApiService
+        engine: LocalTerminalEngine
     ): TerminalRepository {
-        return TerminalRepository(terminalApiService)
+        return TerminalRepository(engine)
     }
 
     @Provides

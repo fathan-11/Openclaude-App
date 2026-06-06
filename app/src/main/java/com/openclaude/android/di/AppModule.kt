@@ -5,7 +5,6 @@ import com.openclaude.android.data.remote.ApiService
 import com.openclaude.android.data.remote.FileApiService
 import com.openclaude.android.data.remote.GitApiService
 import com.openclaude.android.data.remote.McpApiService
-import com.openclaude.android.data.remote.TerminalApiService
 import com.openclaude.android.data.remote.ToolApiService
 import com.openclaude.android.data.remote.GitHubApiService
 import com.openclaude.android.data.remote.StreamingClient
@@ -70,12 +69,6 @@ object AppModule {
     @Singleton
     fun provideFileApiService(retrofit: Retrofit): FileApiService {
         return retrofit.create(FileApiService::class.java)
-    }
-
-    @Provides
-    @Singleton
-    fun provideTerminalApiService(retrofit: Retrofit): TerminalApiService {
-        return retrofit.create(TerminalApiService::class.java)
     }
 
     @Provides
