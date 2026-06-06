@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>OpenClaude Design System v3 — Dark Mode Orange</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#0F0F0F;color:#FFFFFF;padding:40px}
+.ds{max-width:1200px;margin:0 auto}
+h1{font-family:'Plus Jakarta Sans',sans-serif;font-size:36px;font-weight:800;margin-bottom:8px}
+h2{font-size:20px;font-weight:700;margin:40px 0 20px;color:#F5F0E6}
+.subtitle{color:#888;font-size:14px;margin-bottom:40px}
+.section{margin-bottom:40px}
+.color-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
+.swatch{border-radius:12px;overflow:hidden;border:1px solid #333}
+.swatch .preview{height:70px}
+.swatch .info{padding:10px 12px;background:#1A1A1A}
+.swatch .info .name{font-weight:700;font-size:12px;color:#F5F0E6}
+.swatch .info .hex{font-size:11px;color:#666;font-family:monospace}
+.type-sample{margin-bottom:16px;padding:20px;background:#1A1A1A;border-radius:12px;border:1px solid #333}
+.type-sample .label{font-size:11px;color:#666;margin-bottom:4px;text-transform:uppercase;letter-spacing:1px}
+.component-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;margin-bottom:20px}
+.btn{padding:14px 28px;border-radius:14px;border:none;font-family:'Inter',sans-serif;font-weight:700;font-size:14px;cursor:pointer;transition:all 200ms ease}
+.btn-orange{background:#E86F48;color:#1A1A1A}
+.btn-outline{background:transparent;border:2px solid #E86F48;color:#E86F48}
+.btn-ghost{background:#2A2A2A;color:#F5F0E6}
+.card{background:#1A1A1A;border-radius:16px;padding:20px;border:1px solid #333}
+.card-cream{background:#F5F0E6;color:#1A1A1A}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;font-size:13px;font-weight:600}
+.chip-orange{background:#E86F48;color:#1A1A1A}
+.chip-dark{background:#2A2A2A;color:#F5F0E6}
+.nav-bar{display:flex;justify-content:space-around;align-items:center;padding:12px 20px;background:#1A1A1A;border-radius:16px;border:1px solid #333}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:600;color:#666}
+.nav-item.active{color:#E86F48}
+.avatar{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700}
+.avatar-orange{background:#E86F48;color:#1A1A1A}
+.avatar-cream{background:#F5F0E6;color:#1A1A1A}
+</style>
+</head>
+<body>
+<div class="ds">
+<h1>🎨 OpenClaude Design System v3</h1>
+<p class="subtitle">Dark Mode + Orange Accent — Inspired by MeetGen pattern</p>
+
+<div class="section">
+<h2>🌈 Color Palette</h2>
+<h3>Backgrounds</h3>
+<div class="color-grid">
+<div class="swatch"><div class="preview" style="background:#0F0F0F"></div><div class="info"><div class="name">Deep Black</div><div class="hex">#0F0F0F</div></div></div>
+<div class="swatch"><div class="preview" style="background:#1A1A1A"></div><div class="info"><div class="name">Surface</div><div class="hex">#1A1A1A</div></div></div>
+<div class="swatch"><div class="preview" style="background:#2A2A2A"></div><div class="info"><div class="name">Elevated</div><div class="hex">#2A2A2A</div></div></div>
+<div class="swatch"><div class="preview" style="background:#333333"></div><div class="info"><div class="name">Border</div><div class="hex">#333333</div></div></div>
+</div>
+<h3>Accent — Orange</h3>
+<div class="color-grid">
+<div class="swatch"><div class="preview" style="background:#E86F48"></div><div class="info"><div class="name">Orange Primary</div><div class="hex">#E86F48</div></div></div>
+<div class="swatch"><div class="preview" style="background:#F4845F"></div><div class="info"><div class="name">Orange Light</div><div class="hex">#F4845F</div></div></div>
+<div class="swatch"><div class="preview" style="background:#FFB088"></div><div class="info"><div class="name">Orange Soft</div><div class="hex">#FFB088</div></div></div>
+</div>
+<h3>Cards — Cream</h3>
+<div class="color-grid">
+<div class="swatch"><div class="preview" style="background:#F5F0E6"></div><div class="info"><div class="name">Cream</div><div class="hex">#F5F0E6</div></div></div>
+<div class="swatch"><div class="preview" style="background:#FFF8F0"></div><div class="info"><div class="name">Light Cream</div><div class="hex">#FFF8F0</div></div></div>
+</div>
+<h3>Text</h3>
+<div class="color-grid">
+<div class="swatch"><div class="preview" style="background:#F5F0E6"></div><div class="info"><div class="name">Primary Text</div><div class="hex">#F5F0E6</div></div></div>
+<div class="swatch"><div class="preview" style="background:#888888"></div><div class="info"><div class="name">Secondary Text</div><div class="hex">#888888</div></div></div>
+<div class="swatch"><div class="preview" style="background:#555555"></div><div class="info"><div class="name">Muted Text</div><div class="hex">#555555</div></div></div>
+</div>
+</div>
+
+<div class="section">
+<h2>🔤 Typography</h2>
+<div class="type-sample"><div class="label">Display — Plus Jakarta 800</div><div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:42px;font-weight:800;color:#F5F0E6">Ciao, Irfan!</div></div>
+<div class="type-sample"><div class="label">Heading — Inter 700</div><div style="font-size:24px;font-weight:700;color:#F5F0E6">Dev Meeting</div></div>
+<div class="type-sample"><div class="label">Body — Inter 500</div><div style="font-size:16px;font-weight:500;color:#F5F0E6">View your generated schedule</div></div>
+<div class="type-sample"><div class="label">Caption — Inter 400</div><div style="font-size:13px;font-weight:400;color:#888">2 hours ago • Wellness</div></div>
+</div>
+
+<div class="section">
+<h2>🔘 Buttons</h2>
+<div class="component-row">
+<button class="btn btn-orange">Get Started</button>
+<button class="btn btn-outline">Skip</button>
+<button class="btn btn-ghost">Cancel</button>
+</div>
+</div>
+
+<div class="section">
+<h2>📦 Cards</h2>
+<div class="component-row">
+<div class="card" style="width:260px"><div style="font-size:24px;margin-bottom:8px">📅</div><h3 style="font-size:16px;font-weight:700;margin-bottom:4px">Dev Meeting</h3><p style="font-size:13px;color:#888">App update release date</p></div>
+<div class="card card-cream" style="width:260px"><div style="font-size:24px;margin-bottom:8px">🤖</div><h3 style="font-size:16px;font-weight:700;margin-bottom:4px;color:#1A1A1A">AI Assistant</h3><p style="font-size:13px;color:#666">Ask anything</p></div>
+</div>
+</div>
+
+<div class="section">
+<h2>👤 Avatars</h2>
+<div class="component-row">
+<div class="avatar avatar-orange">IF</div>
+<div class="avatar avatar-cream">DC</div>
+<div class="avatar" style="background:#333;color:#F5F0E6">🤖</div>
+</div>
+</div>
+</div>
+</body>
+</html>

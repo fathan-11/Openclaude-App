@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>AI Chat Screen</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Inter',sans-serif;background:#0F0F0F;display:flex;justify-content:center;align-items:center;min-height:100vh}
+.phone{width:390px;height:844px;background:#1A1A1A;border-radius:48px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.5)}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:160px;height:34px;background:#0F0F0F;border-radius:0 0 20px 20px;z-index:10}
+.screen{height:100%;display:flex;flex-direction:column}
+
+/* Top Bar */
+.top-bar{padding:52px 20px 16px;background:#1A1A1A;display:flex;align-items:center;gap:12px;border-bottom:1px solid #2A2A2A}
+.back-btn{width:40px;height:40px;border-radius:12px;background:#2A2A2A;display:flex;align-items:center;justify-content:center;color:#F5F0E6;font-size:18px;cursor:pointer}
+.chat-avatar{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#E86F48,#F4845F);display:flex;align-items:center;justify-content:center;font-size:18px}
+.chat-info{flex:1}
+.chat-name{font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;font-weight:700;color:#F5F0E6}
+.chat-status{font-size:12px;color:#3DAF68;font-weight:500}
+.more-btn{width:40px;height:40px;border-radius:12px;background:#2A2A2A;display:flex;align-items:center;justify-content:center;color:#F5F0E6;font-size:18px;cursor:pointer}
+
+/* Messages */
+.messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px;-webkit-overflow-scrolling:touch}
+.messages::-webkit-scrollbar{display:none}
+.msg{display:flex;gap:10px;max-width:85%}
+.msg.ai{align-self:flex-start}
+.msg.user{align-self:flex-end;flex-direction:row-reverse}
+.msg-avatar{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:4px}
+.msg.ai .msg-avatar{background:#2A2A2A;color:#F5F0E6}
+.msg.user .msg-avatar{background:#E86F48;color:#1A1A1A}
+.msg-bubble{padding:14px 18px;border-radius:18px;font-size:14px;line-height:1.5;font-weight:500}
+.msg.ai .msg-bubble{background:#2A2A2A;color:#F5F0E6;border-bottom-left-radius:6px}
+.msg.user .msg-bubble{background:#E86F48;color:#1A1A1A;border-bottom-right-radius:6px}
+.code-block{background:#0F0F0F;color:#A8E6C3;border-radius:12px;padding:12px 14px;margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.6;overflow-x:auto;border:1px solid #333}
+.code-block .keyword{color:#B49AFF}
+.code-block .string{color:#FFB088}
+.typing-indicator{display:flex;gap:4px;padding:8px 0}
+.typing-dot{width:6px;height:6px;background:#E86F48;border-radius:50%;animation:typing 1.4s infinite}
+.typing-dot:nth-child(2){animation-delay:0.2s}
+.typing-dot:nth-child(3){animation-delay:0.4s}
+@keyframes typing{0%,60%,100%{transform:translateY(0);opacity:0.4}30%{transform:translateY(-6px);opacity:1}}
+
+/* Suggestions */
+.suggestions{padding:0 20px 12px;display:flex;gap:8px;overflow-x:auto}
+.suggestions::-webkit-scrollbar{display:none}
+.suggestion{white-space:nowrap;padding:10px 16px;border-radius:12px;background:#2A2A2A;border:1px solid #333;font-size:13px;font-weight:600;color:#F5F0E6;cursor:pointer;flex-shrink:0;transition:all 200ms ease}
+.suggestion:hover{border-color:#E86F48;color:#E86F48}
+
+/* Input */
+.input-area{padding:12px 20px 28px;background:#1A1A1A;border-top:1px solid #2A2A2A}
+.input-row{display:flex;align-items:center;gap:10px}
+.input-field{flex:1;padding:14px 18px;border-radius:14px;border:1px solid #333;background:#2A2A2A;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:#F5F0E6;outline:none;transition:border-color 200ms ease}
+.input-field:focus{border-color:#E86F48}
+.input-field::placeholder{color:#555}
+.send-btn{width:48px;height:48px;border-radius:14px;background:#E86F48;border:none;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;transition:all 200ms ease}
+.send-btn:hover{transform:scale(1.05);box-shadow:0 4px 16px rgba(232,111,72,0.3)}
+.attach-btn{width:48px;height:48px;border-radius:14px;background:#2A2A2A;border:1px solid #333;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer}
+
+/* Bottom Nav */
+.bottom-nav{position:absolute;bottom:0;left:0;right:0;padding:12px 20px 28px;background:#1A1A1A;border-top:1px solid #2A2A2A}
+.nav-items{display:flex;justify-content:space-around;align-items:center}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 12px;min-width:44px;min-height:44px;justify-content:center}
+.nav-icon-wrap{font-size:20px}
+.nav-item span:last-child{font-size:11px;font-weight:600;color:#555}
+.nav-item.active span:last-child{color:#E86F48}
+</style>
+</head>
+<body>
+<div class="phone">
+<div class="notch"></div>
+<div class="screen">
+<div class="top-bar">
+<div class="back-btn">←</div>
+<div class="chat-avatar">🤖</div>
+<div class="chat-info">
+<div class="chat-name">OpenClaude AI</div>
+<div class="chat-status">● Online</div>
+</div>
+<div class="more-btn">⋯</div>
+</div>
+
+<div class="messages">
+<div class="msg ai">
+<div class="msg-avatar">🤖</div>
+<div class="msg-bubble">Hey Irfan! 👋 I'm your AI coding assistant. How can I help you today?</div>
+</div>
+<div class="msg user">
+<div class="msg-avatar">IF</div>
+<div class="msg-bubble">Help me build a Kotlin Compose button with orange accent</div>
+</div>
+<div class="msg ai">
+<div class="msg-avatar">🤖</div>
+<div class="msg-bubble">
+Sure! Here's a dark-themed button with orange accent:
+<div class="code-block">
+<span class="keyword">@Composable</span><br>
+<span class="keyword">fun</span> OrangeButton(<br>
+&nbsp;&nbsp;text: <span class="keyword">String</span>,<br>
+&nbsp;&nbsp;onClick: () -> <span class="keyword">Unit</span><br>
+) {<br>
+&nbsp;&nbsp;Button(<br>
+&nbsp;&nbsp;&nbsp;&nbsp;onClick = onClick,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;colors = ButtonDefaults<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.buttonColors(<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;backgroundColor = <span class="string">Color(0xFFE86F48)</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)<br>
+&nbsp;&nbsp;) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Text(text, color = <span class="string">Color(0xFF1A1A1A)</span>)<br>
+&nbsp;&nbsp;}<br>
+}
+</div>
+</div>
+</div>
+<div class="msg user">
+<div class="msg-avatar">IF</div>
+<div class="msg-bubble">Perfect! Add a rounded variant too</div>
+</div>
+<div class="msg ai">
+<div class="msg-avatar">🤖</div>
+<div class="msg-bubble">
+<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>
+</div>
+</div>
+</div>
+
+<div class="suggestions">
+<div class="suggestion">✨ Add icon</div>
+<div class="suggestion">🎨 Change style</div>
+<div class="suggestion">📐 Make bigger</div>
+</div>
+
+<div class="input-area">
+<div class="input-row">
+<button class="attach-btn">📎</button>
+<input class="input-field" placeholder="Type your message..." />
+<button class="send-btn">↑</button>
+</div>
+</div>
+</div>
+
+<div class="bottom-nav">
+<div class="nav-items">
+<div class="nav-item"><div class="nav-icon-wrap">📅</div><span>Schedule</span></div>
+<div class="nav-item"><div class="nav-icon-wrap">💬</div><span>Chat</span></div>
+<div class="nav-item active"><div class="nav-icon-wrap">🤖</div><span>AI</span></div>
+<div class="nav-item"><div class="nav-icon-wrap">📁</div><span>Files</span></div>
+<div class="nav-item"><div class="nav-icon-wrap">⚙️</div><span>Settings</span></div>
+</div>
+</div>
+</div>
+</body>
+</html>

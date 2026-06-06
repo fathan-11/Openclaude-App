@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Home Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Inter',sans-serif;background:#0F0F0F;display:flex;justify-content:center;align-items:center;min-height:100vh}
+.phone{width:390px;height:844px;background:#1A1A1A;border-radius:48px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.5)}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:160px;height:34px;background:#0F0F0F;border-radius:0 0 20px 20px;z-index:10}
+.screen{height:100%;display:flex;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.screen::-webkit-scrollbar{display:none}
+.status-bar{display:flex;justify-content:space-between;align-items:center;padding:12px 28px 0;font-size:14px;font-weight:700;color:#F5F0E6}
+
+/* Header */
+.header{padding:20px 24px 0}
+.header-top{display:flex;justify-content:space-between;align-items:center}
+.date-badge{display:flex;align-items:center;gap:8px;padding:8px 14px;background:#2A2A2A;border-radius:12px;font-size:13px;font-weight:600;color:#F5F0E6}
+.notif-btn{width:40px;height:40px;border-radius:12px;background:#2A2A2A;display:flex;align-items:center;justify-content:center;font-size:18px;position:relative;cursor:pointer}
+.notif-badge{position:absolute;top:6px;right:6px;width:8px;height:8px;background:#E86F48;border-radius:50%}
+.greeting{font-family:'Plus Jakarta Sans',sans-serif;font-size:32px;font-weight:800;color:#F5F0E6;margin-top:16px}
+.greeting span{color:#E86F48}
+.subtitle{font-size:14px;color:#888;font-weight:400;margin-top:4px}
+
+/* Tabs */
+.tabs{display:flex;gap:0;padding:16px 24px;background:#1A1A1A}
+.tab{padding:10px 20px;border-radius:12px;font-size:14px;font-weight:600;color:#888;cursor:pointer;transition:all 200ms ease}
+.tab.active{background:#E86F48;color:#1A1A1A}
+
+/* Calendar */
+.calendar{padding:0 24px;margin-top:8px}
+.cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.cal-nav{display:flex;align-items:center;gap:16px}
+.cal-arrow{width:32px;height:32px;border-radius:10px;background:#2A2A2A;display:flex;align-items:center;justify-content:center;color:#F5F0E6;cursor:pointer;font-size:14px}
+.cal-date{font-family:'Plus Jakarta Sans',sans-serif;font-size:24px;font-weight:700;color:#F5F0E6}
+.cal-sub{font-size:12px;color:#888;font-weight:500}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-day{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;border-radius:10px;cursor:pointer;transition:all 200ms ease}
+.cal-day:hover{background:#2A2A2A}
+.cal-day-header{font-size:10px;font-weight:600;color:#555;text-transform:uppercase}
+.cal-day-num{font-size:14px;font-weight:600;color:#F5F0E6}
+.cal-day.active{background:#E86F48}
+.cal-day.active .cal-day-num{color:#1A1A1A}
+.cal-day.has-event .cal-day-num{color:#E86F48}
+.cal-day.has-event::after{content:'';width:4px;height:4px;background:#E86F48;border-radius:50%}
+
+/* Meeting Cards */
+.meetings{padding:20px 24px}
+.section-title{font-size:16px;font-weight:700;color:#F5F0E6;margin-bottom:12px}
+.meeting-card{padding:18px;background:#F5F0E6;border-radius:18px;margin-bottom:12px;cursor:pointer;transition:all 200ms ease}
+.meeting-card:hover{transform:translateY(-2px)}
+.meeting-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.meeting-time{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#E86F48}
+.meeting-title{font-size:18px;font-weight:700;color:#1A1A1A;margin-bottom:4px}
+.meeting-desc{font-size:13px;color:#666;margin-bottom:12px}
+.meeting-footer{display:flex;justify-content:space-between;align-items:center}
+.attendees{display:flex;gap:-8px}
+.attendee{width:28px;height:28px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;margin-left:-8px;border:2px solid #F5F0E6}
+.attendee:first-child{margin-left:0}
+.attendee-count{font-size:12px;color:#666;font-weight:500}
+.meeting-arrow{width:32px;height:32px;border-radius:10px;background:#1A1A1A;display:flex;align-items:center;justify-content:center;color:#F5F0E6;font-size:14px}
+
+/* Bottom Nav */
+.bottom-nav{position:absolute;bottom:0;left:0;right:0;padding:12px 20px 28px;background:#1A1A1A;border-top:1px solid #2A2A2A}
+.nav-items{display:flex;justify-content:space-around;align-items:center}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 12px;min-width:44px;min-height:44px;justify-content:center}
+.nav-icon-wrap{font-size:20px}
+.nav-item span:last-child{font-size:11px;font-weight:600;color:#555}
+.nav-item.active span:last-child{color:#E86F48}
+</style>
+</head>
+<body>
+<div class="phone">
+<div class="notch"></div>
+<div class="screen">
+<div class="status-bar"><span>9:41</span><span>●●●</span></div>
+<div class="header">
+<div class="header-top">
+<div class="date-badge">📅 Friday, 9 Dec</div>
+<div class="notif-btn">🔔<div class="notif-badge"></div></div>
+</div>
+<div class="greeting">Ciao, <span>Irfan!</span></div>
+<div class="subtitle">View your generated meetings schedule</div>
+</div>
+
+<div class="tabs">
+<div class="tab active">Day</div>
+<div class="tab">Week</div>
+<div class="tab">Month</div>
+</div>
+
+<div class="calendar">
+<div class="cal-header">
+<div class="cal-nav">
+<div class="cal-arrow">‹</div>
+<div>
+<div class="cal-date">9</div>
+<div class="cal-sub">DEC</div>
+</div>
+<div class="cal-arrow">›</div>
+</div>
+</div>
+<div class="cal-grid">
+<div class="cal-day-header">MO</div>
+<div class="cal-day-header">TU</div>
+<div class="cal-day-header">WE</div>
+<div class="cal-day-header">TH</div>
+<div class="cal-day-header">FR</div>
+<div class="cal-day-header">SA</div>
+<div class="cal-day-header">SU</div>
+<div class="cal-day"><div class="cal-day-num">5</div></div>
+<div class="cal-day has-event"><div class="cal-day-num">6</div></div>
+<div class="cal-day has-event"><div class="cal-day-num">7</div></div>
+<div class="cal-day"><div class="cal-day-num">8</div></div>
+<div class="cal-day active"><div class="cal-day-num">9</div></div>
+<div class="cal-day"><div class="cal-day-num">10</div></div>
+<div class="cal-day"><div class="cal-day-num">11</div></div>
+</div>
+</div>
+
+<div class="meetings">
+<div class="section-title">Today's Meetings</div>
+<div class="meeting-card">
+<div class="meeting-header">
+<div class="meeting-time">🔴 10 AM</div>
+<div class="meeting-arrow">›</div>
+</div>
+<div class="meeting-title">Dev Meeting</div>
+<div class="meeting-desc">App update release date</div>
+<div class="meeting-footer">
+<div class="attendees">
+<div class="attendee" style="background:#E86F48;color:#1A1A1A">DC</div>
+<div class="attendee" style="background:#333;color:#F5F0E6">CD</div>
+</div>
+<div class="attendee-count">2 Attendees</div>
+</div>
+</div>
+
+<div class="meeting-card">
+<div class="meeting-header">
+<div class="meeting-time">🔴 2 PM</div>
+<div class="meeting-arrow">›</div>
+</div>
+<div class="meeting-title">Sprint Review</div>
+<div class="meeting-desc">Weekly progress check-in</div>
+<div class="meeting-footer">
+<div class="attendees">
+<div class="attendee" style="background:#E86F48;color:#1A1A1A">IF</div>
+<div class="attendee" style="background:#333;color:#F5F0E6">AI</div>
+</div>
+<div class="attendee-count">2 Attendees</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="bottom-nav">
+<div class="nav-items">
+<div class="nav-item active"><div class="nav-icon-wrap">📅</div><span>Schedule</span></div>
+<div class="nav-item"><div class="nav-icon-wrap">💬</div><span>Chat</span></div>
+<div class="nav-item"><div class="nav-icon-wrap">🤖</div><span>AI</span></div>
+<div class="nav-item"><div class="nav-icon-wrap">📁</div><span>Files</span></div>
+<div class="nav-item"><div class="nav-icon-wrap">⚙️</div><span>Settings</span></div>
+</div>
+</div>
+</div>
+</body>
+</html>

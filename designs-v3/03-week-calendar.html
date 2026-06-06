@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Week Calendar View</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Inter',sans-serif;background:#0F0F0F;display:flex;justify-content:center;align-items:center;min-height:100vh}
+.phone{width:390px;height:844px;background:#1A1A1A;border-radius:48px;overflow:hidden;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.5)}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:160px;height:34px;background:#0F0F0F;border-radius:0 0 20px 20px;z-index:10}
+.screen{height:100%;display:flex;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.screen::-webkit-scrollbar{display:none}
+.status-bar{display:flex;justify-content:space-between;align-items:center;padding:12px 28px 0;font-size:14px;font-weight:700;color:#F5F0E6}
+
+.header{padding:20px 24px 0}
+.header-top{display:flex;justify-content:space-between;align-items:center}
+.date-badge{display:flex;align-items:center;gap:8px;padding:8px 14px;background:#2A2A2A;border-radius:12px;font-size:13px;font-weight:600;color:#F5F0E6}
+.notif-btn{width:40px;height:40px;border-radius:12px;background:#2A2A2A;display:flex;align-items:center;justify-content:center;font-size:18px;position:relative;cursor:pointer}
+.notif-badge{position:absolute;top:6px;right:6px;width:8px;height:8px;background:#E86F48;border-radius:50%}
+.greeting{font-family:'Plus Jakarta Sans',sans-serif;font-size:32px;font-weight:800;color:#F5F0E6;margin-top:16px}
+.greeting span{color:#E86F48}
+.subtitle{font-size:14px;color:#888;font-weight:400;margin-top:4px}
+
+.tabs{display:flex;gap:0;padding:16px 24px;background:#1A1A1A}
+.tab{padding:10px 20px;border-radius:12px;font-size:14px;font-weight:600;color:#888;cursor:pointer;transition:all 200ms ease}
+.tab.active{background:#E86F48;color:#1A1A1A}
+
+/* Week View */
+.week-container{padding:0 24px;margin-top:12px}
+.week-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.week-nav{display:flex;align-items:center;gap:16px}
+.cal-arrow{width:32px;height:32px;border-radius:10px;background:#2A2A2A;display:flex;align-items:center;justify-content:center;color:#F5F0E6;cursor:pointer;font-size:14px}
+.week-range{font-family:'Plus Jakarta Sans',sans-serif;font-size:18px;font-weight:700;color:#F5F0E6}
+.week-sub{font-size:12px;color:#888}
+
+/* Time Grid */
+.time-grid{position:relative}
+.time-slot{display:flex;gap:12px;padding:8px 0;border-top:1px solid #2A2A2A}
+.time-label{width:48px;font-size:11px;font-weight:500;color:#555;text-align:right;padding-top:4px}
+.time-content{flex:1;min-height:40px;position:relative}
+
+/* Calendar Dots */
+.cal-week{display:flex;justify-content:space-around;margin-bottom:16px}
+.cal-week-day{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 12px;border-radius:12px;cursor:pointer;transition:all 200ms ease}
+.cal-week-day:hover{background:#2A2A2A}
+.cal-week-label{font-size:10px;font-weight:600;color:#555;text-transform:uppercase}
+.cal-week-num{font-size:16px;font-weight:700;color:#F5F0E6}
+.cal-week-day.active{background:#E86F48}
+.cal-week-day.active .cal-week-num{color:#1A1A1A}
+.cal-week-day.has-event .cal-week-num{color:#E86F48}
+.cal-week-day.has-event::after{content:'';width:4px;height:4px;background:#E86F48;border-radius:50%}
+
+/* Event Blocks */
+.event-block{position:absolute;left:0;right:0;padding:8px 12px;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;transition:all 200ms ease}
+.event-block.orange{background:#E86F48;color:#1A1A1A}
+.event-block.cream{background:#F5F0E6;color:#1A1A1A}
+.event-block.dark{background:#2A2A2A;color:#F5F0E6;border:1px solid #333}
+
+/* Bottom Nav */
+.bottom-nav{position:absolute;bottom:0;left:0;right:0;padding:12px 20px 28px;background:#1A1A1A;border-top:1px solid #2A2A2A}
+.nav-items{display:flex;justify-content:space-around;align-items:center}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 12px;min-width:44px;min-height:44px;justify-content:center}
+.nav-icon-wrap{font-size:20px}
+.nav-item span:last-child{font-size:11px;font-weight:600;color:#555}
+.nav-item.active span:last-child{color:#E86F48}
+</style>
+</head>
+<body>
+<div class="phone">
+<div class="notch"></div>
+<div class="screen">
+<div class="status-bar"><span>9:41</span><span>●●●</span></div>
+<div class="header">
+<div class="header-top">
+<div class="date-badge">📅 Friday, 9 Dec</div>
+<div class="notif-btn">🔔<div class="notif-badge"></div></div>
+</div>
+<div class="greeting">Ciao, <span>Irfan!</span></div>
+<div class="subtitle">View your generated meetings schedule</div>
+</div>
+
+<div class="tabs">
+<div class="tab">Day</div>
+<div class="tab active">Week</div>
+<div class="tab">Month</div>
+</div>
+
+<div class="week-container">
+<div class="week-header">
+<div class="week-nav">
+<div class="cal-arrow">‹</div>
+<div>
+<div class="week-range">5 - 11</div>
+<div class="week-sub">DEC 2024</div>
+</div>
+<div class="cal-arrow">›</div>
+</div>
+</div>
+
+<div class="cal-week">
+<div class="cal-week-day"><div class="cal-week-label">MO</div><div class="cal-week-num">5</div></div>
+<div class="cal-week-day has-event"><div class="cal-week-label">TU</div><div class="cal-week-num">6</div></div>
+<div class="cal-week-day has-event"><div class="cal-week-label">WE</div><div class="cal-week-num">7</div></div>
+<div class="cal-week-day"><div class="cal-week-label">TH</div><div class="cal-week-num">8</div></div>
+<div class="cal-week-day active"><div class="cal-week-label">FR</div><div class="cal-week-num">9</div></div>
+<div class="cal-week-day"><div class="cal-week-label">SA</div><div class="cal-week-num">10</div></div>
+<div class="cal-week-day"><div class="cal-week-label">SU</div><div class="cal-week-num">11</div></div>
+</div>
+
+<div class="time-grid">
+<div class="time-slot">
+<div class="time-label">9 AM</div>
+<div class="time-content"></div>
+</div>
+<div class="time-slot">
+<div class="time-label">10 AM</div>
+<div class="time-content">
+<div class="event-block orange" style="top:0;height:60px">Dev Meeting<br><span style="font-size:10px;font-weight:400">App update release</span></div>
+</div>
+</div>
+<div class="time-slot">
+<div class="time-label">11 AM</div>
+<div class="time-content"></div>
+</div>
+<div class="time-slot">
+<div class="time-label">12 PM</div>
+<div class="time-content">
+<div class="event-block cream" style="top:0;height:50px">Lunch Break 🍽️</div>
+</div>
+</div>
+<div class="time-slot">
+<div class="time-label">1 PM</div>
+<div class="time-content"></div>
+</div>
+<div class="time-slot">
+<div class="time-label">2 PM</div>
+<div class="time-content">
+<div class="event-block dark" style="top:0;height:60px">Sprint Review<br><span style="font-size:10px;font-weight:400">Weekly check-in</span></div>
+</div>
+</div>
+<div class="time-slot">
+<div class="time-label">3 PM</div>
+<div class="time-content"></div>
+</div>
+<div class="time-slot">
+<div class="time-label">4 PM</div>
+<div class="time-content"></div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="bottom-nav">
+<div class="nav-items">
+<div class="nav-item active"><div class="nav-icon-wrap">📅</div><span>Schedule</span></div>
+<div class="nav-item"><div class="nav-icon-wrap">💬</div><span>Chat</span></div>
+<div class="nav-item"><div class="nav-icon-wrap">🤖</div><span>AI</span></div>
+<div class="nav-item"><div class="nav-icon-wrap">📁</div><span>Files</span></div>
+<div class="nav-item"><div class="nav-icon-wrap">⚙️</div><span>Settings</span></div>
+</div>
+</div>
+</div>
+</body>
+</html>
