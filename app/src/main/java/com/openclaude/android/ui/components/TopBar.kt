@@ -9,7 +9,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -17,8 +16,8 @@ import androidx.compose.ui.unit.sp
 import com.openclaude.android.core.ui.theme.*
 
 // ═══════════════════════════════════════════════════════════════
-// DARK MODE + ORANGE TOP BAR
-// Minimal dark bar with orange accent
+// LINEAR-STYLE TOP BAR
+// Ultra-minimal, clean, dark
 // ═══════════════════════════════════════════════════════════════
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -26,40 +25,20 @@ import com.openclaude.android.core.ui.theme.*
 fun TopBar(title: String) {
     CenterAlignedTopAppBar(
         title = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                // Orange accent dot
-                Box(
-                    modifier = Modifier
-                        .size(8.dp)
-                        .background(
-                            brush = Brush.radialGradient(
-                                colors = listOf(
-                                    Orange300,
-                                    Orange300.copy(alpha = 0.0f)
-                                )
-                            ),
-                            shape = androidx.compose.foundation.shape.CircleShape
-                        )
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = title,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = TextPrimary
-                )
-            }
+            Text(
+                text = title,
+                fontWeight = FontWeight.Medium,
+                fontSize = 16.sp,
+                color = TextPrimary
+            )
         },
         navigationIcon = {
             IconButton(onClick = { /* TODO: drawer */ }) {
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = "Profile",
-                    tint = TextSecondary,
-                    modifier = Modifier.size(22.dp)
+                    tint = TextTertiary,
+                    modifier = Modifier.size(20.dp)
                 )
             }
         },
@@ -68,16 +47,16 @@ fun TopBar(title: String) {
                 Icon(
                     imageVector = Icons.Default.Notifications,
                     contentDescription = "Notifications",
-                    tint = TextSecondary,
-                    modifier = Modifier.size(22.dp)
+                    tint = TextTertiary,
+                    modifier = Modifier.size(20.dp)
                 )
             }
         },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = Color.Transparent,
+            containerColor = CanvasBlack,
             titleContentColor = TextPrimary,
-            navigationIconContentColor = TextSecondary,
-            actionIconContentColor = TextSecondary
+            navigationIconContentColor = TextTertiary,
+            actionIconContentColor = TextTertiary
         )
     )
 }

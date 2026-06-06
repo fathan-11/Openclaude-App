@@ -17,7 +17,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -36,8 +35,8 @@ import com.openclaude.android.data.model.Provider
 import com.openclaude.android.data.remote.ApiError
 
 // ═══════════════════════════════════════════════════════════════
-// MODERN BLACK CHAT SCREEN
-// Pure black + glass morphism + electric accents
+// LINEAR-STYLE CHAT SCREEN
+// Ultra-minimal dark mode, precision-engineered
 // ═══════════════════════════════════════════════════════════════
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -81,26 +80,14 @@ fun ChatScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(DeepBlack)
+            .background(CanvasBlack)
     ) {
         // ── Offline Banner ─────────────────────────────────────
         AnimatedVisibility(visible = !isOnline) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(
-                                RedError.copy(alpha = 0.15f),
-                                RedError.copy(alpha = 0.05f)
-                            )
-                        )
-                    )
-                    .border(
-                        width = 1.dp,
-                        color = RedError.copy(alpha = 0.3f),
-                        shape = RoundedCornerShape(0.dp)
-                    )
+                    .background(StatusRed.copy(alpha = 0.08f))
             ) {
                 Row(
                     modifier = Modifier
@@ -112,14 +99,14 @@ fun ChatScreen(
                     Icon(
                         Icons.Default.CloudOff,
                         contentDescription = null,
-                        modifier = Modifier.size(16.dp),
-                        tint = RedError
+                        modifier = Modifier.size(14.dp),
+                        tint = StatusRed
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "No internet connection",
                         style = MaterialTheme.typography.bodySmall,
-                        color = RedError,
+                        color = StatusRed,
                         fontWeight = FontWeight.Medium
                     )
                 }
@@ -127,7 +114,7 @@ fun ChatScreen(
         }
 
         // ── Chat Header ────────────────────────────────────────
-        ModernChatHeader(
+        LinearChatHeader(
             currentProvider = uiState.currentProvider,
             currentModel = uiState.currentModel,
             models = models,
@@ -143,7 +130,7 @@ fun ChatScreen(
             exit = fadeOut() + slideOutVertically()
         ) {
             uiState.error?.let { error ->
-                ModernErrorBanner(
+                LinearErrorBanner(
                     error = error,
                     canRetry = uiState.canRetry,
                     onDismiss = { viewModel.clearError() },
@@ -163,7 +150,7 @@ fun ChatScreen(
         ) {
             if (uiState.messages.isEmpty() && !uiState.isLoading) {
                 item(key = "empty_state") {
-                    ModernEmptyState(provider = uiState.currentProvider)
+                    LinearEmptyState(provider = uiState.currentProvider)
                 }
             }
 
@@ -177,7 +164,7 @@ fun ChatScreen(
 
             if (uiState.isLoading && !hasStreamingMessage) {
                 item(key = "loading_indicator") {
-                    ModernThinkingIndicator()
+                    LinearThinkingIndicator()
                 }
             }
         }
@@ -190,10 +177,10 @@ fun ChatScreen(
     }
 }
 
-// ── Modern Chat Header ────────────────────────────────────────
+// ── Linear Chat Header ────────────────────────────────────────
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ModernChatHeader(
+private fun LinearChatHeader(
     currentProvider: Provider,
     currentModel: Model,
     models: List<Model>,
@@ -201,27 +188,14 @@ private fun ModernChatHeader(
     onModelSelected: (Model) -> Unit,
     onNewChat: () -> Unit,
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        SurfaceDark,
-                        DeepBlack
-                    )
-                )
-            )
-            .border(
-                width = 0.5.dp,
-                color = BorderDark,
-                shape = RoundedCornerShape(0.dp)
-            )
+    Surface(
+        color = CanvasBlack,
+        tonalElevation = 0.dp,
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(horizontal = 16.dp, vertical = 10.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -237,14 +211,14 @@ private fun ModernChatHeader(
 
                 var modelExpanded by remember { mutableStateOf(false) }
 
-                // Model selector — glass morphism chip
+                // Model selector — minimal chip
                 AssistChip(
                     onClick = { modelExpanded = true },
                     label = {
                         Text(
                             text = currentModel.name,
-                            color = TextPrimary,
-                            fontWeight = FontWeight.Medium,
+                            color = TextSecondary,
+                            fontWeight = FontWeight.Normal,
                             fontSize = 13.sp
                         )
                     },
@@ -252,17 +226,17 @@ private fun ModernChatHeader(
                         Icon(
                             Icons.Default.Memory,
                             contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                            tint = PurpleAccent
+                            modifier = Modifier.size(14.dp),
+                            tint = TextTertiary
                         )
                     },
                     colors = AssistChipDefaults.assistChipColors(
-                        containerColor = SurfaceElevated,
-                        labelColor = TextPrimary,
-                        leadingIconContentColor = PurpleAccent
+                        containerColor = SurfaceLevel3,
+                        labelColor = TextSecondary,
+                        leadingIconContentColor = TextTertiary
                     ),
                     border = AssistChipDefaults.assistChipBorder(
-                        borderColor = BorderDark,
+                        borderColor = BorderPrimary,
                         enabled = true
                     )
                 )
@@ -276,7 +250,7 @@ private fun ModernChatHeader(
                             text = {
                                 Text(
                                     text = model.name,
-                                    color = if (model == currentModel) Orange300 else TextPrimary
+                                    color = if (model == currentModel) AccentViolet else TextPrimary
                                 )
                             },
                             onClick = {
@@ -288,45 +262,33 @@ private fun ModernChatHeader(
                 }
             }
 
-            // Right: New chat button — glowing accent
+            // Right: New chat button — subtle
             IconButton(
                 onClick = onNewChat,
                 modifier = Modifier
-                    .shadow(
-                        elevation = 4.dp,
-                        shape = CircleShape,
-                        ambientColor = Orange300.copy(alpha = 0.2f),
-                        spotColor = Orange300.copy(alpha = 0.2f)
-                    )
-                    .background(
-                        brush = Brush.radialGradient(
-                            colors = listOf(
-                                Orange300.copy(alpha = 0.15f),
-                                Orange300.copy(alpha = 0.05f)
-                            )
-                        ),
-                        shape = CircleShape
-                    )
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(SurfaceLevel3)
                     .border(
                         width = 1.dp,
-                        color = Orange300.copy(alpha = 0.3f),
+                        color = BorderPrimary,
                         shape = CircleShape
                     )
             ) {
                 Icon(
                     Icons.Default.Add,
                     contentDescription = "New Chat",
-                    tint = Violet400,
-                    modifier = Modifier.size(20.dp)
+                    tint = TextSecondary,
+                    modifier = Modifier.size(18.dp)
                 )
             }
         }
     }
 }
 
-// ── Modern Error Banner ───────────────────────────────────────
+// ── Linear Error Banner ───────────────────────────────────────
 @Composable
-private fun ModernErrorBanner(
+private fun LinearErrorBanner(
     error: String,
     canRetry: Boolean,
     onDismiss: () -> Unit,
@@ -335,18 +297,7 @@ private fun ModernErrorBanner(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(
-                brush = Brush.horizontalGradient(
-                    colors = listOf(
-                        RedError.copy(alpha = 0.1f),
-                        RedError.copy(alpha = 0.03f)
-                    )
-                )
-            )
-            .border(
-                width = 0.5.dp,
-                color = RedError.copy(alpha = 0.2f)
-            )
+            .background(StatusRed.copy(alpha = 0.06f))
     ) {
         Column(
             modifier = Modifier.padding(12.dp)
@@ -363,13 +314,13 @@ private fun ModernErrorBanner(
                     Icon(
                         Icons.Outlined.ErrorOutline,
                         contentDescription = null,
-                        tint = RedError,
-                        modifier = Modifier.size(16.dp)
+                        tint = StatusRed,
+                        modifier = Modifier.size(14.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = error,
-                        color = RedError,
+                        color = StatusRed,
                         style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.Medium
                     )
@@ -378,8 +329,8 @@ private fun ModernErrorBanner(
                     Icon(
                         Icons.Default.Close,
                         contentDescription = "Dismiss",
-                        tint = RedError.copy(alpha = 0.6f),
-                        modifier = Modifier.size(16.dp)
+                        tint = StatusRed.copy(alpha = 0.6f),
+                        modifier = Modifier.size(14.dp)
                     )
                 }
             }
@@ -389,29 +340,21 @@ private fun ModernErrorBanner(
                 Button(
                     onClick = onRetry,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = RedError.copy(alpha = 0.15f),
-                        contentColor = RedError
+                        containerColor = StatusRed.copy(alpha = 0.1f),
+                        contentColor = StatusRed
                     ),
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
-                    border = ButtonDefaults.outlinedButtonBorder.copy(
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(
-                                RedError.copy(alpha = 0.3f),
-                                RedError.copy(alpha = 0.1f)
-                            )
-                        )
-                    )
                 ) {
                     Icon(
                         Icons.Default.Refresh,
                         contentDescription = null,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(14.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         "Retry",
-                        fontWeight = FontWeight.SemiBold,
+                        fontWeight = FontWeight.Medium,
                         fontSize = 13.sp
                     )
                 }
@@ -420,9 +363,9 @@ private fun ModernErrorBanner(
     }
 }
 
-// ── Modern Empty State ────────────────────────────────────────
+// ── Linear Empty State ────────────────────────────────────────
 @Composable
-private fun ModernEmptyState(provider: Provider) {
+private fun LinearEmptyState(provider: Provider) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -430,28 +373,15 @@ private fun ModernEmptyState(provider: Provider) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Glowing icon
+        // Subtle icon
         Box(
             modifier = Modifier
-                .size(80.dp)
-                .shadow(
-                    elevation = 16.dp,
-                    shape = CircleShape,
-                    ambientColor = Orange300.copy(alpha = 0.2f),
-                    spotColor = Orange300.copy(alpha = 0.2f)
-                )
-                .background(
-                    brush = Brush.radialGradient(
-                        colors = listOf(
-                            Orange300.copy(alpha = 0.15f),
-                            Orange300.copy(alpha = 0.03f)
-                        )
-                    ),
-                    shape = CircleShape
-                )
+                .size(64.dp)
+                .clip(CircleShape)
+                .background(SurfaceLevel3)
                 .border(
                     width = 1.dp,
-                    color = Orange300.copy(alpha = 0.2f),
+                    color = BorderPrimary,
                     shape = CircleShape
                 ),
             contentAlignment = Alignment.Center
@@ -459,28 +389,28 @@ private fun ModernEmptyState(provider: Provider) {
             Icon(
                 imageVector = Icons.Outlined.AutoAwesome,
                 contentDescription = null,
-                modifier = Modifier.size(36.dp),
-                tint = Violet400
+                modifier = Modifier.size(28.dp),
+                tint = AccentViolet
             )
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         Text(
             text = "Start a conversation",
             style = MaterialTheme.typography.titleMedium,
             color = TextPrimary,
-            fontWeight = FontWeight.SemiBold
+            fontWeight = FontWeight.Medium
         )
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(6.dp))
         Text(
-            text = "Send a message to chat with ${provider.displayName}",
+            text = "Chat with ${provider.displayName}",
             style = MaterialTheme.typography.bodyMedium,
             color = TextTertiary,
             fontSize = 14.sp
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         // Quick action chips
         Row(
@@ -502,26 +432,25 @@ private fun ModernEmptyState(provider: Provider) {
     }
 }
 
+// ── Quick Action Chip ─────────────────────────────────────────
 @Composable
 private fun QuickActionChip(
     icon: ImageVector,
     label: String,
 ) {
     Surface(
-        onClick = { /* TODO: quick action */ },
-        shape = RoundedCornerShape(20.dp),
-        color = SurfaceElevated,
-        border = ButtonDefaults.outlinedButtonBorder.copy(
-            brush = Brush.horizontalGradient(
-                colors = listOf(
-                    BorderDark,
-                    BorderDark.copy(alpha = 0.5f)
-                )
-            )
-        )
+        shape = RoundedCornerShape(8.dp),
+        color = SurfaceLevel3,
+        tonalElevation = 0.dp,
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            modifier = Modifier
+                .border(
+                    width = 1.dp,
+                    color = BorderPrimary,
+                    shape = RoundedCornerShape(8.dp)
+                )
+                .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
@@ -529,58 +458,38 @@ private fun QuickActionChip(
                 imageVector = icon,
                 contentDescription = null,
                 modifier = Modifier.size(14.dp),
-                tint = Violet400
+                tint = TextTertiary
             )
             Text(
                 text = label,
+                fontSize = 13.sp,
                 color = TextSecondary,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Normal
             )
         }
     }
 }
 
-// ── Modern Thinking Indicator ─────────────────────────────────
+// ── Linear Thinking Indicator ─────────────────────────────────
 @Composable
-private fun ModernThinkingIndicator() {
+private fun LinearThinkingIndicator() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.Start,
-        verticalAlignment = Alignment.CenterVertically
+            .padding(horizontal = 20.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // Animated dots
-        Box(
-            modifier = Modifier
-                .size(28.dp)
-                .background(
-                    brush = Brush.radialGradient(
-                        colors = listOf(
-                            Orange300.copy(alpha = 0.15f),
-                            Color.Transparent
-                        )
-                    ),
-                    shape = CircleShape
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(18.dp),
-                strokeWidth = 2.dp,
-                color = Violet400
-            )
-        }
-        Spacer(modifier = Modifier.width(10.dp))
+        CircularProgressIndicator(
+            modifier = Modifier.size(16.dp),
+            color = AccentViolet,
+            strokeWidth = 2.dp
+        )
         Text(
             text = "Thinking...",
-            style = MaterialTheme.typography.bodyMedium,
             color = TextTertiary,
-            fontWeight = FontWeight.Medium
+            style = MaterialTheme.typography.bodySmall,
+            fontWeight = FontWeight.Normal
         )
     }
 }
-
-// Test tag for benchmark automation
-private const val CHAT_LIST_TAG = "chat_list"
